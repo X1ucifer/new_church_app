@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useGroups, useRegister } from '@/hooks/useRegister'
 import Swal from 'sweetalert2';
 import { z } from 'zod';
@@ -38,7 +39,8 @@ const userSchema = z.object({
     UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
 });
 
-export default function Register() {
+export default function AddMember() {
+    
     const [formData, setFormData] = useState({
         UserName: '',
         UserFamilyName: '',
@@ -55,7 +57,7 @@ export default function Register() {
 
     const [profileImage, setProfileImage] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const router = useRouter();
+    const navigate = useNavigate();
 
     const { mutate: registerUser, isLoading: registerLoader, error: regError } = useRegister();
 
@@ -90,7 +92,7 @@ export default function Register() {
             onSuccess: (data) => {
                 localStorage.setItem('UserEmail', data.UserEmail);
                 if (data.UserType === "Admin" || data.UserType === "Pastor" || data.UserType === "Exco") {
-                    router.push('/dashboard/member/create-password');
+                    navigate('/dashboard/member/create-password');
                 } else {
                     // Reset form and show success alert
                     // setFormData({
@@ -107,7 +109,7 @@ export default function Register() {
                     //     UserGroupID: '',
                     // }
                     // );
-                    router.push('/dashboard');
+                    navigate('/dashboard');
                     setProfileImage(null);
                     fileInputRef.current && (fileInputRef.current.value = '');
 
@@ -174,7 +176,9 @@ export default function Register() {
                 <div className="p-4 sm:p-6 md:p-8">
                     <div className="flex items-center mb-6">
                         <button
-                            onClick={() => router.back()}
+                            // onClick={() => router.back()}
+                            onClick={() => navigate(-1)} // Navigates back to the previous page
+
                             className="text-gray-600 hover:text-gray-800 mr-4"
                         >
                             <ArrowLeft className="h-6 w-6 text-blue-400" />
