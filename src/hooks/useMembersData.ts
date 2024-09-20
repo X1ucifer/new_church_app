@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { membersData, searchMembers, getMember, deleteMember, editMember } from '@/utils/api';
+import { membersData, searchMembers, getMember, deleteMember, editMember } from '../utils/api';
 import { useState } from 'react';
 import { useInfiniteQuery } from 'react-query';
 import { useMutation } from 'react-query';

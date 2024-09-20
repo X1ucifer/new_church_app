@@ -38,7 +38,6 @@ const userSchema = z.object({
     UserGroupID: z.string().min(1, 'Group is required'),
     UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
 });
-
 export default function AddMember() {
     
     const [formData, setFormData] = useState({

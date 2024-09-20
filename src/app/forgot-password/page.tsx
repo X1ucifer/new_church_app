@@ -37,7 +37,7 @@ export default function ForgotPassword() {
 
                     <div className="flex items-center mb-6">
                         <button
-                            onClick={() => router.back()}
+                            onClick={() => navigate(-1)}
                             className="text-gray-600 hover:text-gray-800 mr-4"
                         >
                             <ArrowLeft className="h-6 w-6 text-blue-400" />

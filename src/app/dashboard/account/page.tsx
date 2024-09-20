@@ -10,7 +10,6 @@ import withAuth from '../../../app/authCheck';
 const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
 const parsedData = userData ? JSON.parse(userData) : null;
 const userId = parsedData?.user.id;
-
 const accountItems = [
     { name: 'Profile', icon: User, route: `/dashboard/account/profile/${userId}` },
     { name: 'Events', icon: Calendar, route: '/dashboard/events' },

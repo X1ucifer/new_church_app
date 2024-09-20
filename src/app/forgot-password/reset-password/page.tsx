@@ -12,7 +12,7 @@ export default function PasswordSetup() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const router = useNavigate();
+    const navigate = useNavigate();
 
     const { mutate: resetPassword, isLoading } = useResetPassword();
 
@@ -35,7 +35,7 @@ export default function PasswordSetup() {
             {
                 onSuccess: () => {
                     setSuccess('Password reset successfully.');
-                    router('/login');
+                navigate('/login');
                 },
                 onError: (error: Error) => {
                     setError('Failed to reset password. Please try again.');
@@ -48,7 +48,7 @@ export default function PasswordSetup() {
         <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-4 sm:p-6 md:p-8">
-                    <button onClick={() => router.back()} className="mb-4 text-gray-600 hover:text-gray-800">
+                    <button onClick={() => navigate(-1)} className="mb-4 text-gray-600 hover:text-gray-800">
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
 

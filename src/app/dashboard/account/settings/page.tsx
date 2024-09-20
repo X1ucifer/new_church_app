@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { updateRights, getRights } from '@/utils/api';
+// import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom';
+import { updateRights, getRights } from '../../../../utils/api';
 import Swal from 'sweetalert2';
 
 interface AccessRight {
@@ -24,8 +25,9 @@ export default function UsageRights() {
     const [accessRights, setAccessRights] = useState<AccessRight[]>(initialAccessRights)
     const [loading, setLoading] = useState(false);
 
-    const router = useRouter();
+    // const router = useRouter();
 
+    const navigate=useNavigate()
     useEffect(() => {
         const fetchRights = async () => {
             try {
@@ -145,7 +147,7 @@ export default function UsageRights() {
             <div className="max-w-2xl mx-auto bg-white md:shadow-lg">
                 {/* Header */}
                 <div className="flex items-center p-4 border-b">
-                    <button onClick={() => router.back()} className="text-blue-500 hover:text-blue-700 mr-4">
+                    <button onClick={() => navigate(-1)} className="text-blue-500 hover:text-blue-700 mr-4">
                         <ArrowLeft className="h-6 w-6" />
                     </button>
                     <h1 className="text-xl font-medium">Settings</h1>

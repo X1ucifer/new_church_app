@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Search, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import withAuth from '@/app/authCheck';
-import { useMembersData, useSearchMembers } from '@/hooks/useMembersData';
+import withAuth from '../../../authCheck'; 
+import { useMembersData, useSearchMembers } from '../../../../hooks/useMembersData';
 import Skeleton from 'react-loading-skeleton';
 
 function MembersData() {
@@ -58,13 +58,12 @@ function MembersData() {
     return (
         <div className="min-h-screen bg-white text-black">
             <div className="max-w-4xl mx-auto bg-white md:shadow-lg">
-                {/* Header */}
                 <div className="flex justify-between items-center p-4">
-                    <button onClick={() => router.back()} className="text-blue-500 hover:text-blue-700 flex items-center">
+                    <button onClick={() => navigate(-1)} className="text-blue-500 hover:text-blue-700 flex items-center">
                         <ArrowLeft className="h-5 w-5 mr-4" />
                         <p className='text-black font-medium'>Members Data</p>
                     </button>
-                    <Link href="/dashboard/member" passHref>
+                    <Link to="/dashboard/member" >
                         <button className="text-blue-500 hover:text-blue-700 flex items-center">
                             <Plus className="h-5 w-5 mr-1" />
                             New

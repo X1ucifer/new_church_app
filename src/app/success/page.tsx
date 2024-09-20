@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Confetti from 'react-confetti'
-import Image from 'next/image'
 
 export default function AccountCreated() {
     const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 })
@@ -35,7 +34,7 @@ export default function AccountCreated() {
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
                     >
-                        <Image priority={true} src="/sticker.png" width={450} height={450} alt="success" className="mx-auto" />
+                        <img  src="/sticker.png" width={450} height={450} alt="success" className="mx-auto" />
 
                     </motion.div>
                 </div>

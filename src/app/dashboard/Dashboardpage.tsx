@@ -7,7 +7,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import withAuth from '../authCheck'; 
 import { useDashboard } from '../../hooks/useDashboard';
 import Chart from 'react-apexcharts';
-
 const data = [
     { name: 'Evergreen', value: 200, color: '#4F46E5' },
     { name: 'Middle Age', value: 200, color: '#F59E0B' },
@@ -15,8 +14,8 @@ const data = [
     { name: 'Children', value: 800, color: '#EC4899' },
     { name: 'Friends', value: 200, color: '#10B981' },
 ];
-
 const totalValues = [
+  
     { label: 'Active Members', value: 1000, color: 'text-blue-600' },
     { label: 'Inactive Members', value: 300, color: 'text-blue-600' },
     { label: 'Members need attending', value: 500, color: 'text-blue-600' },

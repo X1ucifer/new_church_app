@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+// import Image from 'next/image'
+// import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom';
 import { useForgotPasswordOTP } from '../../../hooks/useForgotPassword';
 
 export default function OTPVerification() {
@@ -11,7 +12,7 @@ export default function OTPVerification() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-    const router = useRouter();
+    const navigate = useNavigate();
 
     useEffect(() => {
         inputRefs.current[0]?.focus()
@@ -50,7 +51,7 @@ export default function OTPVerification() {
         verifyOTP({ email, otp: enteredOtp }, {
             onSuccess: () => {
                 setSuccess('OTP verified successfully.');
-                router.push('/forgot-password/reset-password');
+               navigate('/forgot-password/reset-password');
             },
             onError: (error: Error) => {
                 setError('Failed to verify OTP. Please try again.');
@@ -62,12 +63,12 @@ export default function OTPVerification() {
         <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-6 sm:p-8">
-                    <button onClick={() => router.back()} className="mb-6 text-gray-600 hover:text-gray-800">
+                    <button onClick={() => navigate(-1)} className="mb-6 text-gray-600 hover:text-gray-800">
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
 
                     <div className="flex justify-center mb-6">
-                        <Image src="/otp.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
+                        <img src="/otp.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
                     </div>
 
                     <h2 className="text-2xl font-bold mb-[5px] md:text-2xl md:font-bold md:text-center md:mb-2">Enter OTP</h2>

@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+// import Image from 'next/image'
+// import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useChangePassword } from '../../../../hooks/useForgotPassword'
-import withAuth from '@/app/authCheck'
+import withAuth from '../../../../app/authCheck'
 
 function PasswordSetup() {
     const [currentPassword, setCurrentPassword] = useState('')
@@ -15,7 +16,7 @@ function PasswordSetup() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const router = useRouter();
+    const navigate = useNavigate();
 
     const { mutate: changePassword, isLoading } = useChangePassword();
 
@@ -37,7 +38,7 @@ function PasswordSetup() {
             {
                 onSuccess: () => {
                     setSuccess('Password changed successfully.');
-                    router.push('/dashboard');
+                    navigate('/dashboard');
                 },
                 onError: (error: Error) => {
                     setError('Failed to change password. Please try again.');
@@ -50,12 +51,12 @@ function PasswordSetup() {
         <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-4 sm:p-6 md:p-8">
-                    <button onClick={() => router.back()} className="mb-4 text-gray-600 hover:text-gray-800">
+                    <button onClick={() => navigate(-1)} className="mb-4 text-gray-600 hover:text-gray-800">
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
 
                     <div className="flex justify-center mb-6">
-                        <Image src="/password.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
+                        <img src="/password.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
                     </div>
 
                     <h2 className="text-2xl font-bold mb-8 md:text-2xl md:font-bold md:text-center md:mb-2">Change Password</h2>

@@ -151,9 +151,9 @@ export default function ChurchLogin() {
                             )}
                         </div>
                         <div className="text-right">
-                            {/* <Link href="/forgot-password" passHref className="text-sm text-blue-600 hover:underline">
+                            <Link to="/forgot-password"  className="text-sm text-blue-600 hover:underline">
                                 Forgot Password?
-                            </Link> */}
+                            </Link>
                         </div>
 
                         <button
