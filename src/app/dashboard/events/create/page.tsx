@@ -1,9 +1,7 @@
-'use client'
-
 import React, { useState } from 'react'
 import { X, ChevronDown, Clock, Calendar } from 'lucide-react'
-import { useAddEvent } from '@/hooks/useEvents'
-import { useChurches } from '@/hooks/useRegister';
+import { useAddEvent } from '../../../../hooks/useEvents'
+import { useChurches } from '../../../../hooks/useRegister';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';

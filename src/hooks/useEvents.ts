@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { addEvent, deleteEvent, filterMembers, getEvent, getRights, upcomingEvenrs } from '../utils/api';
+import { addEvent, deleteEvent, filterMembers, getAttendance, getEvent, getRights, upcomingEvenrs, updateEvent } from '../utils/api';
 import { useDispatch } from 'react-redux';
 import { addEvents,  deleteEvent as deleteEventAction } from '../redux/slices/eventSlice';
 
@@ -20,6 +20,22 @@ export const useEventDetails = (token: string, id: number) => {
       cacheTime: 600000,
     }
   );
+};
+
+export const useAddendance = (token: string, id: number) => {
+  return useQuery(
+    ['attendance', id],
+    () => getAttendance(token, id),
+    {
+      enabled: !!id,
+      staleTime: 300000,
+      cacheTime: 600000,
+    }
+  );
+};
+
+export const useEditEvent = (token: string) => {
+  return useMutation((data: { id: number; eventData: any }) => updateEvent(token, data));
 };
 
 export const useRights = (token: string) => {
@@ -70,10 +86,14 @@ export const useDeleteEvent = (token: string) => {
   );
 };
 
-export const useFilterMembers = (token: string, filter_type: string) => {
-  return useQuery(['filteredMembers', filter_type], () => filterMembers(token, filter_type), {
-      enabled: !!filter_type, 
-      staleTime: 5 * 60 * 1000, 
-      cacheTime: 10 * 60 * 1000,
-  });
+export const useFilterMembers = (token: string, filter_type: string, id?: any) => {
+  return useQuery(
+    ['filteredMembers', filter_type],
+    () => filterMembers(token, filter_type, id),
+    {
+      cacheTime: 0, // Ensures no caching
+      refetchOnWindowFocus: true, 
+      staleTime: 0, // Ensures data is considered stale immediately
+    }
+  );
 };
