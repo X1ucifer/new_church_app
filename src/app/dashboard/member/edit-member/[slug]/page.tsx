@@ -63,12 +63,7 @@ export default function UpdateMember({ params }: any) {
         try {
             await editMember({ token, id, data: formData }, {
                 onSuccess() {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Member Updated',
-                        text: 'Member details have been updated successfully!',
-                        confirmButtonText: 'OK',
-                    });
+                    router.push(`/dashboard/account/profile/${id}`)
                 }
             });
 
@@ -106,7 +101,7 @@ export default function UpdateMember({ params }: any) {
     }, [member]);
 
     return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-black">
             <div className="w-full max-w-lg bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-4 sm:p-6 md:p-8">
                     <div className="flex items-center mb-6">

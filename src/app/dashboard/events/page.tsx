@@ -14,6 +14,7 @@ import { RootState, AppDispatch } from '../../../redux/store';
 import { fetchEventsSuccess } from '../../../redux/slices/eventSlice';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { useRouter } from 'next/navigation';
 
 const MySwal = withReactContent(Swal);
 
@@ -51,9 +52,9 @@ function ChurchEvents() {
   }, []);
 
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
-
-  const token = localStorage.getItem('token') || '';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
   const events = useSelector((state: RootState) => state.events.events);
 
@@ -77,6 +78,10 @@ function ChurchEvents() {
       }
     });
   };
+
+  const handleEdit = (id: number) => {
+    router.push(`/dashboard/events/edit-event/${id}`);
+   };
 
   useEffect(() => {
     if (!events.length && fetchedEvents) {
@@ -141,7 +146,7 @@ function ChurchEvents() {
                           ref={dropdownRef}
                           className="absolute right-0 top-10 bg-white shadow-lg rounded-md p-2 z-[999]"
                         >
-                          <button className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <button onClick={() => handleEdit(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Edit
                           </button>
                           <button onClick={() => handleDelete(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

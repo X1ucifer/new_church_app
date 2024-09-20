@@ -2,12 +2,43 @@
 
 import { useState, useRef } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useGroups, useRegister } from '@/hooks/useRegister'
 import Swal from 'sweetalert2';
+import { z } from 'zod';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const userSchema = z.object({
+    UserName: z
+        .string()
+        .min(1, 'Name is required')
+        .regex(/^[a-zA-Z\s]+$/, 'Name cannot contain special characters'), 
+
+    UserFamilyName: z
+        .string()
+        .min(1, 'Family name is required')
+        .regex(/^[a-zA-Z\s]+$/, 'Family name cannot contain special characters'), 
+
+    UserGender: z.string().min(1, 'Gender is required'),
+    UserMaritalStatus: z.string().min(1, 'Marital status is required'),
+    UserDOB: z.string().refine((val) => !!val, {
+        message: 'Date of Birth is required',
+    }),
+
+    UserPhone: z
+        .string()
+        .length(10, 'Mobile number must be exactly 10 digits')
+        .regex(/^\d{10}$/, 'Mobile number must be digits only'),
+
+    UserEmail: z.string().email('Invalid email format'),
+    UserAddress: z.string().min(1, 'Address is required'),
+    UserType: z.string().min(1, 'User type is required'),
+    UserGroupID: z.string().min(1, 'Group is required'),
+    UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
+});
+
 export default function Register() {
-
-
     const [formData, setFormData] = useState({
         UserName: '',
         UserFamilyName: '',
@@ -20,13 +51,11 @@ export default function Register() {
         UserType: '',
         UserChurchName: '',
         UserGroupID: '',
-
-        
     })
 
     const [profileImage, setProfileImage] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const router = useNavigate();
+    const router = useRouter();
 
     const { mutate: registerUser, isLoading: registerLoader, error: regError } = useRegister();
 
@@ -46,51 +75,101 @@ export default function Register() {
             reader.readAsDataURL(file)
         }
     }
-// console.log(activetab,"newf")
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const completeData = { ...formData, profileImage };
 
+    const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
+    const parsedData = userData ? JSON.parse(userData) : null;
+    const userType = parsedData?.user.UserType;
+
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(userSchema),
+    });
+
+    const onSubmit: any = (data: any) => {
+        const completeData = { ...data, profileImage };
         registerUser(completeData, {
             onSuccess: (data) => {
-                localStorage.setItem('UserEmail', formData.UserEmail);
+                localStorage.setItem('UserEmail', data.UserEmail);
                 if (data.UserType === "Admin" || data.UserType === "Pastor" || data.UserType === "Exco") {
-                    router.navigate('/dashboard/member/create-password');
+                    router.push('/dashboard/member/create-password');
                 } else {
-                    setFormData({
-                        UserName: '',
-                        UserFamilyName: '',
-                        UserGender: '',
-                        UserMaritalStatus: '',
-                        UserDOB: '',
-                        UserPhone: '',
-                        UserEmail: '',
-                        UserAddress: '',
-                        UserType: '',
-                        UserChurchName: '',
-                        UserGroupID: '',
-                    });
+                    // Reset form and show success alert
+                    // setFormData({
+                    //     UserName: '',
+                    //     UserFamilyName: '',
+                    //     UserGender: '',
+                    //     UserMaritalStatus: '',
+                    //     UserDOB: '',
+                    //     UserPhone: '',
+                    //     UserEmail: '',
+                    //     UserAddress: '',
+                    //     UserType: '',
+                    //     UserChurchName: '',
+                    //     UserGroupID: '',
+                    // }
+                    // );
+                    router.push('/dashboard');
                     setProfileImage(null);
                     fileInputRef.current && (fileInputRef.current.value = '');
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Registration Successful',
-                        text: 'User has been registered successfully!',
-                        confirmButtonText: 'OK',
-                    });
+
+                    // Swal.fire({
+                    //     icon: 'success',
+                    //     title: 'Registration Successful',
+                    //     text: 'User has been registered successfully!',
+                    //     confirmButtonText: 'OK',
+                    // });
                 }
-
             },
-
         });
     };
+
+
+
+    // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    //     e.preventDefault();
+    //     const completeData = { ...formData, profileImage };
+
+    //     registerUser(completeData, {
+    //         onSuccess: (data) => {
+    //             localStorage.setItem('UserEmail', formData.UserEmail);
+    //             if (data.UserType === "Admin" || data.UserType === "Pastor" || data.UserType === "Exco") {
+    //                 router.push('/dashboard/member/create-password');
+    //             } else {
+    //                 setFormData({
+    // UserName: '',
+    // UserFamilyName: '',
+    // UserGender: '',
+    // UserMaritalStatus: '',
+    // UserDOB: '',
+    // UserPhone: '',
+    // UserEmail: '',
+    // UserAddress: '',
+    // UserType: '',
+    // UserChurchName: '',
+    // UserGroupID: '',
+    //                 });
+    //                 setProfileImage(null);
+    //                 fileInputRef.current && (fileInputRef.current.value = '');
+
+    //                 Swal.fire({
+    //                     icon: 'success',
+    //                     title: 'Registration Successful',
+    //                     text: 'User has been registered successfully!',
+    //                     confirmButtonText: 'OK',
+    //                 });
+    //             }
+
+    //         },
+
+    //     });
+    // };
+
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
     const { data: groups, isLoading, error } = useGroups(token);
 
+
     return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-black">
             <div className="w-full max-w-lg bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-4 sm:p-6 md:p-8">
                     <div className="flex items-center mb-6">
@@ -101,9 +180,9 @@ export default function Register() {
                             <ArrowLeft className="h-6 w-6 text-blue-400" />
                         </button>
                         <h2 className="text-xl font-bold">New Member</h2>
-                    </div>  
+                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="flex md:justify-center mb-6">
                             <div className="relative">
                                 {profileImage ? (
@@ -135,12 +214,12 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserName"
-                                name="UserName"
-                                value={formData.UserName}
-                                onChange={handleChange}
+                                {...register('UserName')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
+                            {errors.UserName && typeof errors.UserName.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserName.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -148,12 +227,12 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserFamilyName"
-                                name="UserFamilyName"
-                                value={formData.UserFamilyName}
-                                onChange={handleChange}
+                                {...register('UserFamilyName')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
+                            {errors.UserFamilyName && typeof errors.UserFamilyName.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserFamilyName.message}</p>
+                            )}
                         </div>
 
                         <div className="flex space-x-4">
@@ -161,27 +240,25 @@ export default function Register() {
                                 <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                                 <select
                                     id="UserGender"
-                                    name="UserGender"
-                                    value={formData.UserGender}
-                                    onChange={handleChange}
+                                    {...register('UserGender')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    required
                                 >
                                     <option value="">Select</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Other">Other</option>
                                 </select>
+                                {errors.UserGender && typeof errors.UserGender.message === 'string' && (
+                                    <p className="text-red-500 text-sm">{errors?.UserGender.message}</p>
+                                )}
                             </div>
+
                             <div className="flex-1">
                                 <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
                                 <select
                                     id="UserMaritalStatus"
-                                    name="UserMaritalStatus"
-                                    value={formData.UserMaritalStatus}
-                                    onChange={handleChange}
+                                    {...register('UserMaritalStatus')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    required
                                 >
                                     <option value="">Select</option>
                                     <option value="Single">Single</option>
@@ -189,7 +266,12 @@ export default function Register() {
                                     <option value="Divorced">Divorced</option>
                                     <option value="Widowed">Widowed</option>
                                 </select>
+
+                                {errors.UserMaritalStatus && typeof errors.UserMaritalStatus.message === 'string' && (
+                                    <p className="text-red-500 text-sm">{errors?.UserMaritalStatus.message}</p>
+                                )}
                             </div>
+
                         </div>
 
                         <div>
@@ -197,12 +279,12 @@ export default function Register() {
                             <input
                                 type="date"
                                 id="UserDOB"
-                                name="UserDOB"
-                                value={formData.UserDOB}
-                                onChange={handleChange}
+                                {...register('UserDOB')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
+                            {errors.UserDOB && typeof errors.UserDOB.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserDOB.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -210,12 +292,12 @@ export default function Register() {
                             <input
                                 type="tel"
                                 id="UserPhone"
-                                name="UserPhone"
-                                value={formData.UserPhone}
-                                onChange={handleChange}
+                                {...register('UserPhone')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
+                            {errors.UserPhone && typeof errors.UserPhone.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserPhone.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -223,25 +305,25 @@ export default function Register() {
                             <input
                                 type="email"
                                 id="UserEmail"
-                                name="UserEmail"
-                                value={formData.UserEmail}
-                                onChange={handleChange}
+                                {...register('UserEmail')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
+                            {errors.UserEmail && typeof errors.UserEmail.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserEmail.message}</p>
+                            )}
                         </div>
 
                         <div>
                             <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                             <textarea
                                 id="UserAddress"
-                                name="UserAddress"
-                                value={formData.UserAddress}
-                                onChange={handleChange}
+                                {...register('UserAddress')}
                                 rows={3}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             ></textarea>
+                            {errors.UserAddress && typeof errors.UserAddress.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserAddress.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -250,20 +332,22 @@ export default function Register() {
                             </label>
                             <select
                                 id="UserType"
-                                name="UserType"
-                                value={formData.UserType}
-                                onChange={handleChange}
+                                {...register('UserType')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             >
                                 <option value="">Select</option>
-                                <option value="Admin">Admin</option>
-                                <option value="Pastor">Pastor</option>
-                                <option value="Exco">Exco</option>
+                                {userType == "Admin" && (
+                                    <>
+                                        <option value="Pastor">Pastor</option>
+                                        <option value="Exco">Exco</option>
+                                    </>
+                                )}
                                 <option value="Member">Member</option>
-                                <option value="Friend">Friend</option>
                             </select>
                         </div>
+                        {errors.UserType && typeof errors.UserType.message === 'string' && (
+                            <p className="text-red-500 text-sm">{errors?.UserType.message}</p>
+                        )}
 
                         <div>
                             <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -271,11 +355,8 @@ export default function Register() {
                             </label>
                             <select
                                 id="UserType"
-                                name="UserGroupID"
-                                value={formData.UserGroupID}
-                                onChange={handleChange}
+                                {...register('UserGroupID')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             >
                                 <option value="">Select Group</option>
                                 {isLoading ? (
@@ -291,7 +372,9 @@ export default function Register() {
                                 )}
                             </select>
                         </div>
-
+                        {errors.UserGroupID && typeof errors.UserGroupID.message === 'string' && (
+                            <p className="text-red-500 text-sm">{errors?.UserGroupID.message}</p>
+                        )}
 
                         <div>
                             <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
@@ -299,12 +382,12 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserChurchName"
-                                name="UserChurchName"
-                                value={formData.UserChurchName}
-                                onChange={handleChange}
+                                {...register('UserChurchName')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
+                            {errors.UserChurchName && typeof errors.UserChurchName.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserChurchName.message}</p>
+                            )}
                         </div>
 
                         <button

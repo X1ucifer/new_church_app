@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useCreatePassword } from '@/hooks/useRegister';
 import Swal from 'sweetalert2';
 
@@ -11,7 +12,8 @@ export default function PasswordSetup() {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const router = useNavigate();
+    const router = useRouter();
+
     const { mutate: createPassword, isLoading, error } = useCreatePassword();
 
     const UserEmail = typeof window !== 'undefined' ? localStorage.getItem('UserEmail') || '' : '';
@@ -30,7 +32,7 @@ export default function PasswordSetup() {
                         text: 'Your password has been created successfully.',
                         confirmButtonText: 'OK',
                     }).then(() => {
-                        router('/dashboard'); 
+                        router.push('/dashboard'); 
                     });
                 },
             });
@@ -47,7 +49,7 @@ export default function PasswordSetup() {
     
 
     return (
-        <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
+        <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4 text-black">
             <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-4 sm:p-6 md:p-8">
                     <button onClick={() => router.back()} className="mb-4 text-gray-600 hover:text-gray-800">
@@ -55,7 +57,7 @@ export default function PasswordSetup() {
                     </button>
 
                     <div className="flex justify-center mb-6">
-                        <img src="/password.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
+                        <Image src="/password.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
                     </div>
 
                     <h2 className="text-2xl font-bold mb-8 md:text-2xl md:font-bold md:text-center md:mb-2">Set up your <br className="block md:hidden" /> Password</h2>
