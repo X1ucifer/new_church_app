@@ -1,5 +1,5 @@
 import { upcomingEvenrs } from '@/utils/api';
-import Attendance from './page';
+import Attendance from '../page';
 
 
 export async function generateStaticParams() {

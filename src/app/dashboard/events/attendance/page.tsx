@@ -1,138 +1,138 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
-import { ArrowLeft, Search, Plus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useAddendance, useEventDetails, useFilterMembers } from '@/hooks/useEvents';
-import Page from './params';
-import { updateAttendance } from '@/utils/api';
-import withAuth from '@/app/authCheck';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
+import { ArrowLeft, Search, Plus } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAddendance, useEventDetails, useFilterMembers } from '../../../../hooks/useEvents';
+import { updateAttendance } from '../../../../utils/api';
+import withAuth from '../../../../app/authCheck';
 import Swal from 'sweetalert2';
-
-const eventDetails = {
-    name: 'Sabbath Services',
-    type: 'Friday Sabbath',
-    date: '26/08/2024, Mon',
-    time: '08:00 Pm',
-    leader: 'Mr. Peter'
-}
-
-const initialMembers = [
-    { id: 1, familyName: 'WONG', memberName: 'Courtney', isPresent: false },
-    { id: 2, familyName: 'WONG', memberName: 'Gloria', isPresent: false },
-    { id: 3, familyName: 'WONG', memberName: 'Wendy', isPresent: false },
-    { id: 4, familyName: 'ONG', memberName: 'Lily', isPresent: false },
-    { id: 5, familyName: 'ONG', memberName: 'Kathryn', isPresent: false },
-    { id: 6, familyName: 'LIM', memberName: 'Gladys', isPresent: false },
-    { id: 7, familyName: 'LIM', memberName: 'Aubrey', isPresent: false },
-    { id: 8, familyName: 'CHUA', memberName: 'Claire', isPresent: false },
-    { id: 9, familyName: 'CHUA', memberName: 'Savannah', isPresent: false },
-    { id: 10, familyName: 'KAVI', memberName: 'Julie', isPresent: false },
-]
-
 
 const API_URL = 'https://tjc.wizappsystem.com/church/public/api/user/newFriends';
 
-function Attendance({ params }: any) {
-    const [activeTab, setActiveTab] = useState('Member')
-    const [searchTerm, setSearchTerm] = useState('')
-    const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
-    const [eventDetails, setEventDetails] = useState<any>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        UserName: '',
-        UserFamilyName: '',
-        UserGender: 'Female',
-        UserMaritalStatus: 'Single',
-        UserDOB: '',
-        UserPhone: '',
-        UserEmail: '',
-        UserAddress: '',
-        UserType: 'Outstation Member',
-        UserChurchName: '',
+
+interface EventDetails {
+  EventName: string;
+  EventType: string;
+  EventDate: string;
+  EventTime: string;
+  EventLeader: string;
+}
+
+interface Member {
+  id: number;
+  UserFamilyName: string;
+  UserName: string;
+  isMarked: string;
+}
+
+interface FormData {
+  UserName: string;
+  UserFamilyName: string;
+  UserGender: string;
+  UserMaritalStatus: string;
+  UserDOB: string;
+  UserPhone: string;
+  UserEmail: string;
+  UserAddress: string;
+  UserType: string;
+  UserChurchName: string;
+}
+
+const Attendance: React.FC<any> = () => {
+  const [activeTab, setActiveTab] = useState<string>('Member');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
+  const [eventDetails, setEventDetails] = useState<EventDetails | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
+    UserName: '',
+    UserFamilyName: '',
+    UserGender: 'Female',
+    UserMaritalStatus: 'Single',
+    UserDOB: '',
+    UserPhone: '',
+    UserEmail: '',
+    UserAddress: '',
+    UserType: 'Outstation Member',
+    UserChurchName: '',
+  });
+
+  const { id } = useParams<{ id: string }>();
+
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token') || '';
+  const userId:any = id;
+
+  const { data: event } = useEventDetails(token, userId);
+  const { data: attendance } = useAddendance(token, userId);
+  const { data: members } = useFilterMembers(token, activeTab, userId);
+
+  useEffect(() => {
+    if (event) {
+      setEventDetails(event);
+    }
+  }, [event]);
+
+  const handleAttendanceChange = (id: number) => {
+    setSelectedMembers((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((memberId) => memberId !== id)
+        : [...prevSelected, id]
+    );
+  };
+
+  const handleSubmitAttendance = async () => {
+    try {
+      await updateAttendance(token, userId, selectedMembers);
+      Swal.fire({
+        icon: 'success',
+        title: 'Successful',
+        text: 'Attendance added!',
+        confirmButtonText: 'OK',
+      });
+    } catch (error) {
+      console.error('Error submitting attendance:', error);
+    }
+  };
+
+  const filteredMembers = members?.filter(
+    (member: Member) =>
+      member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
     });
+  };
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const router = useRouter();
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
+      const data = await response.json();
+      console.log('User added:', data);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error adding friend:', error);
+    }
+  };
 
-    const userId: any = params.slug
-
-    const { data: event, isLoading, error } = useEventDetails(token, userId);
-
-    const { data: attendance, isLoading: isAttendance, error: attendanceError } = useAddendance(token, userId);
-    console.log("date", attendance)
-
-
-    const { data: members, isLoading: filterLoadind, isError } = useFilterMembers(token, activeTab, userId);
-
-
-    useEffect(() => {
-        if (event) {
-            setEventDetails(event);
-        }
-    }, [event]);
-
-    const handleAttendanceChange = (id: number) => {
-        setSelectedMembers((prevSelected) =>
-          prevSelected.includes(id)
-            ? prevSelected.filter((memberId) => memberId !== id) 
-            : [...prevSelected, id] 
-        );
-      };
-
-    const handleSubmitAttendance = async () => {
-        try {
-            await updateAttendance(token, userId, selectedMembers);
-            Swal.fire({
-                icon: 'success',
-                title: 'Successful',
-                text: 'Attendance added!',
-                confirmButtonText: 'OK',
-            });
-        } catch (error) {
-        }
-    };
-
-    const filteredMembers = members?.filter((member: any) =>
-        member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-            console.log('User added:', data);
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error('Error adding friend:', error);
-        }
-    };
-
-    const handleOpenModal = () => setIsModalOpen(true);
-    const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
 
     return (
@@ -140,7 +140,7 @@ function Attendance({ params }: any) {
             <div className="max-w-3xl mx-auto bg-white md:shadow-lg">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b">
-                    <button onClick={() => router.back()} className="text-blue-500 hover:text-blue-700 flex items-center">
+                    <button onClick={() => navigate(-1)} className="text-blue-500 hover:text-blue-700 flex items-center">
                         <ArrowLeft className="h-5 w-5 mr-1" />
                         <p className='text-black font-medium'>Attendance</p>
                     </button>

@@ -1,5 +1,5 @@
 import { membersData } from '@/utils/api'
-import UpdateMember from './page';
+import UpdateMember from '../page';
 
 
 export async function generateStaticParams() {

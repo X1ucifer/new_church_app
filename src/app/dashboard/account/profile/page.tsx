@@ -1,47 +1,23 @@
-'use client'
-
-import React from 'react'
-import { ArrowLeft, MoreVertical } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { Link } from 'react-router-dom'
-import withAuth from '@/app/authCheck'
-import { useMember, useDeleteMember } from '@/hooks/useMembersData'
+import React from 'react';
+import { ArrowLeft, MoreVertical } from 'lucide-react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import withAuth from '../../../../app/authCheck'; // Replace with your actual auth HOC path
+import { useMember, useDeleteMember } from '../../../../hooks/useMembersData'; // Adjust the hook import paths as needed
 import { toast } from 'react-toastify';
-import Page from './params'
 
-const userInfo = {
-    name: 'John Willington',
-    status: 'Active',
-    family: 'WONG',
-    gender: 'Male',
-    maritalStatus: 'Married',
-    dob: '02/04/1984',
-    mobile: '9874589824',
-    email: 'Katona@gmail.com',
-    pastoralChurch: 'Melaka',
-    address: 'Durrer Kurt Gartenbau, Chapfli 18, 6072, Sachseln, Obwalden, CHE'
-}
-
-interface UserProfileProps {
-    showDeleteOption?: boolean;
-}
-
-function UserProfile( { params }: any) {
+function UserProfile() {
     const navigate = useNavigate();
-    const showDeleteOption = true
-    const router: any = useNavigate();
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
-
-    const userId: any = params.slug
+    const { id } = useParams(); // Access the route params
+    const token = localStorage.getItem('token') || '';
+    const userId: any = id;
 
     const { data: user, isLoading, error } = useMember(token, userId);
-
     const { mutate: deleteMember } = useDeleteMember();
 
     const handleEdit = () => {
         const userIdString = String(userId);
         navigate(`/dashboard/member/edit-member/${userIdString}`);
-    }
+    };
 
     const handleDelete = () => {
         toast(
@@ -88,14 +64,12 @@ function UserProfile( { params }: any) {
                 {/* Header */}
                 <div className="flex justify-between items-center p-4">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => navigate(-1)} // Use navigate(-1) to go back in React Router
                         className="text-gray-600 hover:text-gray-800 mr-4"
                     >
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-900">
-                        <MoreVertical className="h-6 w-6" />
-                    </button>
+                  
                 </div>
 
                 {/* Profile Content */}
@@ -103,15 +77,16 @@ function UserProfile( { params }: any) {
                     {/* Profile Picture and Name */}
                     <div className="flex justify-start items-center mb-6">
                         <img src="/profile.png" width={100} height={100} alt="Logo" className="w-24 h-24 rounded-full object-cover mb-2" />
-
-                        <h1 className="ml-[20px] text-2xl font-bold">{user?.UserName} <br></br>  <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                            {userInfo.status}
-                        </span></h1>
+                        <h1 className="ml-[20px] text-2xl font-bold">
+                            {user?.UserName} <br />
+                            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
+                                {user?.status || "Active"}
+                            </span>
+                        </h1>
                     </div>
 
                     {/* User Information */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
-
                         {user && Object.entries(user).map(([key, value]) => {
                             if (key !== 'UserName' && key !== 'UserChurchID' && key !== 'id' && key !== 'UserProfile' && key !== 'UserEmailVerified' && key !== 'UserGroupID' && key !== 'UserType' && key !== 'UserAddress') {
                                 return (
@@ -123,7 +98,6 @@ function UserProfile( { params }: any) {
                             }
                             return null;
                         })}
-
                     </div>
 
                     {/* Address */}
@@ -133,38 +107,24 @@ function UserProfile( { params }: any) {
                     </div>
 
                     {/* Buttons */}
-                    <div className="flex  sm:flex-row gap-4 mb-4 mt-4">
-                        {showDeleteOption ? (
-                            <>
-                                <button
-                                    onClick={handleDelete}
-                                    className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
-                                >
-                                    Delete Account
-                                </button>
-                                <button onClick={handleEdit}
-                                    className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">
-                                    Edit Profile
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button className="flex-1 border border-blue-500 text-blue-500 py-2 rounded-md hover:bg-blue-50 transition-colors duration-300">
-                                    <Link href="/dashboard/account/change-password" passHref>
-                                        Change Password
-                                    </Link>
-                                </button>
-                                <button className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">
-                                    Edit Profile
-                                </button>
-                            </>
-                        )}
-
+                    <div className="flex sm:flex-row gap-4 mb-4 mt-4">
+                        <button
+                            onClick={handleDelete}
+                            className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
+                        >
+                            Delete Account
+                        </button>
+                        <button
+                            onClick={handleEdit}
+                            className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"
+                        >
+                            Edit Profile
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default withAuth(UserProfile);

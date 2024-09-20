@@ -1,14 +1,11 @@
-'use client'
-
 import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
-// import { useRouter } from 'next/navigation'
-import { useNavigate } from 'react-router-dom'
-import { useGroups, useRegister } from '@/hooks/useRegister'
+import { useNavigate, useParams } from 'react-router-dom' // Import useParams and useNavigate
+import { useGroups, useRegister } from '../../../../hooks/useRegister'
 import Swal from 'sweetalert2';
-import { useEditMember, useMember } from '@/hooks/useMembersData'
+import { useEditMember, useMember } from '../../../../hooks/useMembersData'
 
-export default function UpdateMember({ params }: any) {
+export default function UpdateMember() {
     const [formData, setFormData] = useState({
         UserName: '',
         UserFamilyName: '',
@@ -21,51 +18,42 @@ export default function UpdateMember({ params }: any) {
         UserType: '',
         UserChurchName: '',
         UserGroupID: '',
-    })
+    });
 
-    const [profileImage, setProfileImage] = useState<string | null>(null)
-    const fileInputRef = useRef<HTMLInputElement>(null)
-    // const router = useRouter();
-    const navigate=useNavigate()
-
-    // const params = useParams()
-    const id: any = params.slug
-
-    console.log(id)
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const navigate = useNavigate(); // Use useNavigate for navigation
+    const { id } = useParams<{ id: any }>(); // Use useParams to get the id from the URL
 
     const { mutate: editMember, isLoading: Loading, error: Error } = useEditMember();
 
     const handleChange = (e: any) => {
-        const { name, value } = e.target
-        setFormData(prevData => ({ ...prevData, [name]: value }))
-    }
+        const { name, value } = e.target;
+        setFormData(prevData => ({ ...prevData, [name]: value }));
+    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+        const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader()
+            const reader = new FileReader();
             reader.onloadend = () => {
-                setProfileImage(reader.result as string)
-            }
-            reader.readAsDataURL(file)
+                setProfileImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
-    }
-
+    };
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
     const { data: groups, isLoading, error } = useGroups(token);
+    const { data: member, isLoading: editLoading, error: editError } = useMember(token, id as any);
 
-    const { data: member, isLoading: editLoading, error: editError } = useMember(token, id);
-
-
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         try {
             await editMember({ token, id, data: formData }, {
                 onSuccess() {
-                    navigate(`/dashboard/account/profile/${id}`)
+                    navigate(`/dashboard/account/profile/${id}`);
                 }
             });
 
@@ -78,7 +66,6 @@ export default function UpdateMember({ params }: any) {
             });
         }
     };
-
 
     useEffect(() => {
         if (member) {
@@ -101,6 +88,7 @@ export default function UpdateMember({ params }: any) {
             }
         }
     }, [member]);
+
 
     return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-black">
