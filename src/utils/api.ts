@@ -339,9 +339,10 @@ export const deleteEvent = async (token: string, id: number) => {
     }
 };
 
-export const filterMembers = async (token: string, filter_type: string) => {
+export const filterMembers = async (token: string, filter_type: string, id?:any) => {
     try {
-        const response = await api.get(`/user/filterByType`, {
+        const url = id ? `/user/filterByType/${id}` : `/user/filterByType`;
+        const response = await api.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -349,6 +350,7 @@ export const filterMembers = async (token: string, filter_type: string) => {
                 filter_type: filter_type,
             },
         });
+        console.log("API Response:", response.data);
         return response.data.data;
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -474,6 +476,100 @@ export const updateRights = async (
         if (error instanceof AxiosError) {
             throw new Error(
                 error.response?.data?.message || 'Failed to update the rights. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+export const getDashboard = async (token: string) => {
+    try {
+        console.log("opan")
+        const response = await api.get('/dashboard', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log(response.data.data)
+        return {
+           data: response.data.data,
+           totalValues: response.data.totalValues,
+           averageAttendance: response.data.averageAttendance
+        };
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to fetch dashboard. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+export const updateAttendance = async (token: string, eventId: number, users: any[]) => {
+    try {
+        const response = await api.post(`/event/updateAttendance/${eventId}`, {
+            users,
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to update attendance. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+export const updateEvent = async (token: string, { id, eventData }: { id: number; eventData: any }) => {
+    try {
+        const response = await api.patch(`/event/update/${id}`, {
+            EventName: eventData.eventName,
+            EventType: eventData.eventType,
+            EventLeader: eventData.leader,
+            EventTime: eventData.time,
+            EventDate: eventData.date,
+            EventChurchID: eventData.churchID,
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data.message;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to update event. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+export const getAttendance = async (token: string, id:number) => {
+    try {
+        const response = await api.get(`/event/getAttendance/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to fetch attendance. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
