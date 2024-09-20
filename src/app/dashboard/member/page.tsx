@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
 // import { useRouter } from 'next/navigation'
 import { useNavigate } from 'react-router-dom'
-import { useGroups, useRegister } from '@/hooks/useRegister'
+import { useGroups, useRegister } from '../../../hooks/useRegister'
 import Swal from 'sweetalert2';
 import { z } from 'zod';
 import { useForm, SubmitHandler } from 'react-hook-form';

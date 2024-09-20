@@ -21,6 +21,7 @@ const App: React.FC = () => {
         <Route path="/dashboard/events" element={<ChurchEvents />} />
         <Route path="/dashboard/account" element={<AccountSettings />} />
         <Route path="/dashboard/events/edit-event/:id" element={<AccountSettings />} />
+        <Route path="/dashboard/member" element={<AddMember />} />
       </Routes>
     </Router>
   );
