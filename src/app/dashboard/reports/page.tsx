@@ -5,6 +5,7 @@ import { ChevronRight, ChevronDown } from 'lucide-react'
 import { DesktopHeader } from '../../../components/partials/desktopHeader'
 import { MobileHeader } from '../../../components/partials/mobileHeader'
 import axios from 'axios'
+import { Link } from 'react-router-dom';
 
 
 const baseUrl = 'https://tjc.wizappsystem.com/church/public/api'
@@ -197,7 +198,6 @@ Completed
     }
   }
 
-  if (loading) return <p>Loading...</p>
   if (error) return <p>{error}</p>
 
   return (
@@ -237,13 +237,14 @@ Completed
                         {familyMembers[family.UserFamilyName] ? (
                           <div className="space-y-2">
                             {familyMembers[family.UserFamilyName].map(member => (
-                              <button
-                                key={member.id}
-                                className="block p-2 w-full text-left text-blue-600 hover:underline"
-                                onClick={() => handleMemberClick(member.id)}
-                              >
-                                {member.UserName}
-                              </button>
+                              <Link to={`/dashboard/account/profile/${member.id}`} >
+                                <button
+                                  key={member.id}
+                                  className="block p-2 w-full text-left text-blue-600 hover:underline"
+                                >
+                                  {member.UserName}
+                                </button>
+                              </Link>
                             ))}
                           </div>
                         ) : (
@@ -295,7 +296,7 @@ Completed
         ) : showReportUsersPage ? (
           <div className="min-h-screen bg-white flex flex-col text-black">
             {/* Desktop Header */}
-            <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
+            {/* <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} /> */}
 
             {/* Main Content */}
             <main className="flex-grow container mx-auto p-4 md:p-8">

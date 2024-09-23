@@ -1,14 +1,14 @@
-'use client'
-
 import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom';
+import { useForgotPasswordOTP } from '../../../hooks/useForgotPassword';
 
-export default function OTPVerification() {
+export default function RegisterOTPVerification() {
     const [otp, setOtp] = useState(['', '', '', '', '', ''])
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-    const router = useRouter();
+    const router = useNavigate();
 
     useEffect(() => {
         inputRefs.current[0]?.focus()
@@ -31,23 +31,39 @@ export default function OTPVerification() {
             inputRefs.current[index - 1]?.focus()
         }
     }
+    const { mutate: verifyOTP, isLoading } = useForgotPasswordOTP();
 
     const handleVerify = () => {
         const enteredOtp = otp.join('')
         console.log('Verifying OTP:', enteredOtp)
-        // Add your OTP verification logic here
+        const email = localStorage.getItem('UserEmail');
+
+        if (!email) {
+            setError('No email found. Please go back and try again.');
+            return;
+        }
+
+        verifyOTP({ email, otp: enteredOtp }, {
+            onSuccess: () => {
+                setSuccess('OTP verified successfully.');
+                router('/dashboard');
+            },
+            onError: (error: Error) => {
+                setError('Failed to verify OTP. Please try again.');
+            }
+        });
     }
 
     return (
         <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-6 sm:p-8">
-                    <button onClick={() => router.back()} className="mb-6 text-gray-600 hover:text-gray-800">
+                    <button onClick={() => router(-1)} className="mb-6 text-gray-600 hover:text-gray-800">
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
 
                     <div className="flex justify-center mb-6">
-                        <Image src="/otp.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
+                        <img src="/otp.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
                     </div>
 
                     <h2 className="text-2xl font-bold mb-[5px] md:text-2xl md:font-bold md:text-center md:mb-2">Enter OTP</h2>
@@ -78,7 +94,7 @@ export default function OTPVerification() {
                         onClick={handleVerify}
                         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                        Verify
+                        {isLoading ? 'Verifying OTP...' : 'Verify OTP'}
                     </button>
                 </div>
             </div>

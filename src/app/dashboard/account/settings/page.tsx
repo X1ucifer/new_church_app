@@ -165,7 +165,7 @@ export default function UsageRights() {
                                     <th className="border p-2 text-left">#</th>
                                     <th className="border p-2 text-left">Access Rights</th>
                                     <th className="border p-2 text-center">Local Pastor</th>
-                                    <th className="border p-2 text-center">Local Exec</th>
+                                    <th className="border p-2 text-center">Local Exco</th>
                                 </tr>
                             </thead>
                             <tbody>

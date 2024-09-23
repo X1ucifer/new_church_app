@@ -1,11 +1,15 @@
 'use client'
 
 import { useMutation } from 'react-query';
-import { registerUser, getChurch, getGroups, createPassword, editMember } from '../utils/api';
+import { registerUser, getChurch, getGroups, createPassword, editMember, otpSend, addFriend } from '../utils/api';
 import { useQuery } from 'react-query';
 
 export const useRegister = () => {
     return useMutation((data: any) => registerUser(data));
+};
+
+export const useFriend = (token:string) => {
+    return useMutation((data: any) => addFriend(token, data));
 };
 
 export const useChurches = () => {
@@ -22,4 +26,13 @@ export const useCreatePassword = () => {
             createPassword(UserEmail, newPassword, newPasswordConfirmation)
     );
 };
+
+
+export const useSendOTP = () => {
+    return useMutation(
+        ({ UserEmail }: { UserEmail: string}) =>
+            otpSend(UserEmail)
+    );
+};
+
 

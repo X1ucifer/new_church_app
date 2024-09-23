@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Search, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Use react-router-dom for navigation
+import { Link, useNavigate } from 'react-router-dom'; // Use react-router-dom for navigation
 import { useFilterMembers } from '../../../../hooks/useEvents';
 import Skeleton from 'react-loading-skeleton';
 import withAuth from '../../../../app/authCheck';
@@ -30,7 +30,12 @@ function StationMembersData() {
                         <ArrowLeft className="h-5 w-5 mr-4" />
                         <p className='text-black font-medium'>Outstation Member</p>
                     </button>
-                   
+                    <Link to="/dashboard/member" >
+                        <button className="text-blue-500 hover:text-blue-700 flex items-center">
+                            <Plus className="h-5 w-5 mr-1" />
+                            New
+                        </button>
+                    </Link>
                 </div>
 
                 {/* Search Bar */}

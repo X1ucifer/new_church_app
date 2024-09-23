@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Search, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import Link from 'react-router-dom'; 
+import { useNavigate, Link } from 'react-router-dom';
 import withAuth from '../../../../app/authCheck';
 import Skeleton from 'react-loading-skeleton';
 import { useFilterMembers } from '../../../../hooks/useEvents';
@@ -31,6 +30,12 @@ function FriendData() {
                         <ArrowLeft className="h-5 w-5 mr-4" />
                         <p className='text-black font-medium'>Friends</p>
                     </button>
+                    <Link to="/dashboard/member" >
+                        <button className="text-blue-500 hover:text-blue-700 flex items-center">
+                            <Plus className="h-5 w-5 mr-1" />
+                            New
+                        </button>
+                    </Link>
                 </div>
 
                 {/* Search Bar */}

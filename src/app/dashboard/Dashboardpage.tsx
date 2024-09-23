@@ -80,7 +80,7 @@ function ChurchDemographics() {
                 {/* Donut Chart */}
                 <div className="bg-white rounded-lg shadow p-4 mb-4 flex justify-between items-center">
                     {/* Donut Chart */}
-                    <div className="w-1/10 md:w-1/5 ml-[-20px]">
+                    <div className="w-1/10 md:w-1/4 ml-[-20px]">
                         <Chart
                             options={chartOptions}
                             series={chartSeries}

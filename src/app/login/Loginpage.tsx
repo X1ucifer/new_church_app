@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import {Link} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 import { z } from 'zod';
 import { useLogin } from '../../hooks/useLogin';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../redux/slices/authSlice';
+import { useSendOTP } from '../../hooks/useRegister';
+import Swal from 'sweetalert2';
 
 const loginSchema = z.object({
     email: z
@@ -43,10 +45,12 @@ export default function ChurchLogin() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-          navigate('/dashboard'); 
+            navigate('/dashboard');
         }
-      }, [navigate]); 
-    
+    }, [navigate]);
+
+    const sendOTP = useSendOTP();
+
 
     const onSubmit: any = (data: { email: string; password: string }) => {
 
@@ -58,8 +62,9 @@ export default function ChurchLogin() {
 
         mutate(formattedData, {
             onSuccess: (responseData) => {
+                localStorage.setItem('UserEmail', responseData.user.UserEmail);
 
-                console.log("data", responseData)
+                console.log("data", responseData.user.UserEmailVerified)
                 const userData = {
                     user: responseData.user,
                     token: responseData.accessToken,
@@ -67,7 +72,28 @@ export default function ChurchLogin() {
 
                 dispatch(loginSuccess(userData));
 
-                navigate('/dashboard'); 
+                if (responseData.user.UserEmailVerified == "1") {
+                    navigate('/dashboard');
+
+                } else {
+                    sendOTP.mutate(
+                        { UserEmail: responseData.user.UserEmail },
+                        {
+                            onSuccess: () => {
+                                router('/register/verify-otp');
+                            },
+                            onError: (error: any) => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'OTP Sending Failed',
+                                    text: error?.message || 'Failed to send OTP. Please try again.',
+                                    confirmButtonText: 'OK',
+                                });
+                            }
+                        }
+                    );
+                }
+
             },
             onError: (error: any) => {
                 console.log("d", error)
@@ -151,7 +177,7 @@ export default function ChurchLogin() {
                             )}
                         </div>
                         <div className="text-right">
-                            <Link to="/forgot-password"  className="text-sm text-blue-600 hover:underline">
+                            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
                                 Forgot Password?
                             </Link>
                         </div>
@@ -165,9 +191,9 @@ export default function ChurchLogin() {
                     </form>
                     <p className="mt-4 text-center text-sm text-gray-600">
                         Don't have an account?{' '}
-                        {/* <Link href="/register" passHref className="font-bold text-blue-600 hover:underline">
+                        <Link to="/register" className="font-bold text-blue-600 hover:underline">
                             Register
-                        </Link> */}
+                        </Link>
                     </p>
                 </div>
             </div>

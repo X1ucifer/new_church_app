@@ -398,6 +398,21 @@ export const createPassword = async (UserEmail: string, newPassword: string, new
     }
 };
 
+export const otpSend = async (UserEmail: string) => {
+    try {
+        const response = await api.post('/otp/send', { UserEmail });
+        return response.data.message;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to send OTP. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
 export const editMember = async (
     token: string,
     id: number,
@@ -576,6 +591,53 @@ export const getAttendance = async (token: string, id:number) => {
         }
     }
 };
+
+export const addFriend = async (token: string, data:any) => {
+    try {
+        const response = await api.post('/user/newFriends', {
+            ...data
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data.data;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to add friend. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+export const membersImport = async (token?: string, file?: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('excel_file', file as Blob); 
+  
+      const response = await api.post('/excel_import', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data', 
+        },
+      });
+  
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to upload members data. Please try again.'
+        );
+      } else {
+        throw new Error('An unexpected error occurred. Please try again.');
+      }
+    }
+  };
+
 
 
 export default api;

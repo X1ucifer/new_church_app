@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { useChangePassword } from '../../../../hooks/useForgotPassword'
 import withAuth from '../../../../app/authCheck'
 
-function PasswordSetup() {
+function ChangePassword() {
     const [currentPassword, setCurrentPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -165,4 +165,4 @@ function PasswordSetup() {
     )
 }
 
-export default withAuth(PasswordSetup);
+export default withAuth(ChangePassword);

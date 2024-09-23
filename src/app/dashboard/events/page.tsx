@@ -18,9 +18,10 @@ function ChurchEvents() {
   const [activeTab, setActiveTab] = useState('Events');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
+  const [userType, setUserType] = useState('');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
   const events = useSelector((state: RootState) => state.events.events);
@@ -45,6 +46,13 @@ function ChurchEvents() {
     };
   }, []);
 
+  useEffect(() => {
+    const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
+    const parsedData = userData ? JSON.parse(userData) : null;
+    const userType = parsedData?.user.UserType;
+    setUserType(userType);
+  }, []);
+
   const handleDelete = (id: number) => {
     MySwal.fire({
       title: 'Are you sure?',
@@ -65,6 +73,10 @@ function ChurchEvents() {
 
   const handleEdit = (id: number) => {
     navigate(`/dashboard/events/edit-event/${id}`); // Use navigate from React Router
+  };
+  
+  const handleAttendance = (id: number) => {
+    navigate(`/dashboard/events/attendance/${id}`);
   };
 
   useEffect(() => {
@@ -122,12 +134,19 @@ function ChurchEvents() {
                           ref={dropdownRef}
                           className="absolute right-0 top-10 bg-white shadow-lg rounded-md p-2 z-[999]"
                         >
+                          <button onClick={() => handleAttendance(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Add Attendance
+                          </button>
                           <button onClick={() => handleEdit(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Edit
                           </button>
-                          <button onClick={() => handleDelete(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            Delete
-                          </button>
+                          {userType == "Admin" && (
+                            <>
+                              <button onClick={() => handleDelete(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Delete
+                              </button>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>

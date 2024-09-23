@@ -204,6 +204,7 @@ export default function UpdateMember() {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 required
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
 

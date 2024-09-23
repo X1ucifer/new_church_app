@@ -1,38 +1,74 @@
-'use client'
-
 import { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom';
+import { useCreatePassword, useSendOTP } from '../../../hooks/useRegister';
+import Swal from 'sweetalert2';
 
-export default function PasswordSetup() {
+export default function RegisterPasswordSetup() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const router = useRouter();
+  const router = useNavigate();
+
+  const { mutate: createPassword, isLoading, error } = useCreatePassword();
+
+  const sendOTP = useSendOTP();
+
+  const UserEmail = typeof window !== 'undefined' ? localStorage.getItem('UserEmail') || '' : '';
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
+
     if (newPassword === confirmPassword) {
-      console.log('Password set successfully')
-      // Handle password setup logic here
+      createPassword({ UserEmail, newPassword, newPasswordConfirmation: confirmPassword }, {
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'User Created!',
+            text: 'Your password has been created successfully.',
+            confirmButtonText: 'OK',
+          }).then(() => {
+            sendOTP.mutate(
+              { UserEmail }, 
+              {
+                onSuccess: () => {
+                  router('/register/verify-otp');
+                },
+                onError: (error:any) => {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'OTP Sending Failed',
+                    text: error?.message || 'Failed to send OTP. Please try again.',
+                    confirmButtonText: 'OK',
+                  });
+                }
+              }
+            );
+          });
+        },
+      });
     } else {
-      console.log('Passwords do not match')
-      // Handle error state here
+      Swal.fire({
+        icon: 'warning',
+        title: 'Passwords Mismatch',
+        text: 'Please make sure both passwords match.',
+        confirmButtonText: 'OK',
+      });
     }
   }
+
 
   return (
     <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
         <div className="p-4 sm:p-6 md:p-8">
-          <button   onClick={() => router.back()}  className="mb-4 text-gray-600 hover:text-gray-800">
+          <button onClick={() => router(-1)} className="mb-4 text-gray-600 hover:text-gray-800">
             <ArrowLeft className="h-6 w-6 text-blue-400" />
           </button>
 
           <div className="flex justify-center mb-6">
-            <Image src="/password.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
+            <img src="/password.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
           </div>
 
           <h2 className="text-2xl font-bold mb-8 md:text-2xl md:font-bold md:text-center md:mb-2">Set up your <br className="block md:hidden" /> Password</h2>
@@ -94,7 +130,7 @@ export default function PasswordSetup() {
               type="submit"
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Submit
+              {isLoading ? 'Sending OTP...' : 'Submit'}
             </button>
           </form>
         </div>

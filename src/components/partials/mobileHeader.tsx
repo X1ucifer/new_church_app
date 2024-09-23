@@ -1,6 +1,6 @@
 import React from 'react';
-import { Home, FileText, Calendar, User } from 'lucide-react';
-import { Link } from 'react-router-dom'; // Use React Router for navigation
+import { Home, FileText, Calendar, User, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom'; // Use React Router for navigation
 import { updateRights, getRights } from '../../utils/api'; // Adjust the import path as needed
 import Skeleton from 'react-loading-skeleton';
 
@@ -12,6 +12,13 @@ export interface IAppProps {
 export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
     const [accessRights, setAccessRights] = React.useState<any>(null);
     const [userType, setUserType] = React.useState<string>('');
+    const navigate = useNavigate();
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/'); 
+    };
 
     React.useEffect(() => {
         const fetchAccessRights = async () => {
@@ -99,7 +106,7 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                                 </Link>
                             </li>
                         )}
-                        {accessRights.settings === '1' && (
+                        {accessRights.settings === '1' ? (
                             <li>
                                 <Link to="/dashboard/account">
                                     <button
@@ -111,7 +118,19 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                                     </button>
                                 </Link>
                             </li>
-                        )}
+                        )
+                            : (
+                                <>
+                                 <button
+                                        className={`flex flex-col items-center ${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'}`}
+                                        onClick={logout}
+                                    >
+                                        <LogOut className="h-6 w-6" />
+                                        <span className="text-xs">Logout</span>
+                                    </button>
+                                </>
+                            )
+                        }
                     </>
                 )}
             </ul>

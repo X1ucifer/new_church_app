@@ -5,7 +5,7 @@ import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 // import Image from 'next/image'
 // import { useRouter } from 'next/navigation'
 import { useNavigate } from 'react-router-dom';
-import { useCreatePassword } from '@/hooks/useRegister';
+import { useCreatePassword } from '../../../../hooks/useRegister';
 import Swal from 'sweetalert2';
 
 export default function PasswordSetup() {

@@ -11,7 +11,13 @@ export interface IAppProps {
 export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
     const [accessRights, setAccessRights] = React.useState<any>(null);
     const [userType, setUserType] = React.useState<string>('');
-    const navigate = useNavigate(); // Use useNavigate to programmatically navigate if needed
+    const navigate = useNavigate(); 
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/'); 
+    };
 
     React.useEffect(() => {
         const fetchAccessRights = async () => {
@@ -91,7 +97,7 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
                             </Link>
                         </li>
                     )}
-                    {accessRights.settings === '1' && (
+                    {accessRights.settings === '1' ? (
                         <li>
                             <Link to="/dashboard/account"> {/* Change href to to */}
                                 <button
@@ -102,7 +108,20 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
                                 </button>
                             </Link>
                         </li>
+                    ) : (
+                        <>
+                            <li>
+                                <button
+                                    onClick={logout}
+                                    className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                >
+                                    Logout
+                                </button>
+                            </li>
+                        </>
                     )}
+
+
                 </ul>
             </nav>
         </header>

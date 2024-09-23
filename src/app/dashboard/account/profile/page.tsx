@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import withAuth from '../../../../app/authCheck'; // Replace with your actual auth HOC path
@@ -6,6 +6,7 @@ import { useMember, useDeleteMember } from '../../../../hooks/useMembersData'; /
 import { toast } from 'react-toastify';
 
 function UserProfile() {
+    const [userType, setUserType] = useState('');
     const navigate = useNavigate();
     const { id } = useParams(); // Access the route params
     const token = localStorage.getItem('token') || '';
@@ -18,6 +19,13 @@ function UserProfile() {
         const userIdString = String(userId);
         navigate(`/dashboard/member/edit-member/${userIdString}`);
     };
+
+    useEffect(() => {
+        const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
+        const parsedData = userData ? JSON.parse(userData) : null;
+        const userType = parsedData?.user.UserType;
+        setUserType(userType);
+    }, []);
 
     const handleDelete = () => {
         toast(
@@ -69,7 +77,7 @@ function UserProfile() {
                     >
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
-                  
+
                 </div>
 
                 {/* Profile Content */}
@@ -108,12 +116,19 @@ function UserProfile() {
 
                     {/* Buttons */}
                     <div className="flex sm:flex-row gap-4 mb-4 mt-4">
-                        <button
-                            onClick={handleDelete}
-                            className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
-                        >
-                            Delete Account
-                        </button>
+                        {userType == "Admin" &&
+                            (
+                                <>
+                                    <button
+                                        onClick={handleDelete}
+                                        className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
+                                    >
+                                        Delete Account
+                                    </button>
+                                </>
+                            )
+                        }
+
                         <button
                             onClick={handleEdit}
                             className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"

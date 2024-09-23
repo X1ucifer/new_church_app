@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, ChevronDown, Calendar } from 'lucide-react';
+import { X, ChevronDown, Calendar, ArrowLeft } from 'lucide-react';
 import { useAddEvent, useEditEvent, useEventDetails, useUpcomingEvents } from '../../../../hooks/useEvents';
 import { useChurches } from '../../../../hooks/useRegister';
 import TimePicker from 'react-time-picker';
@@ -71,11 +71,15 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg shadow-lg text-black">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-full">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-semibold">Edit Event</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            {/* <X className="h-6 w-6" /> */}
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => navigate(-1)} // Navigates back to the previous page
+
+            className="text-gray-600 hover:text-gray-800 mr-4"
+          >
+            <ArrowLeft className="h-6 w-6 text-blue-400" />
           </button>
+          <h2 className="text-xl font-medium">Edit Event</h2>
         </div>
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
