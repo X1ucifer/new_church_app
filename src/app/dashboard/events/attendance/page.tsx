@@ -233,34 +233,37 @@ const Attendance: React.FC<any> = () => {
 
                 {/* Members Table */}
                 <div className="px-4 pb-4">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="text-left text-gray-500">
-                                <th className="py-2">#</th>
-                                <th className="py-2">Family Name</th>
-                                <th className="py-2">Member Name</th>
-                                <th className="py-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredMembers.map((member: any, index: number) => (
-                                <tr key={member.id} className="border-t">
-                                    <td className="py-2">{index + 1}</td>
-                                    <td className="py-2">{member.UserFamilyName}</td>
-                                    <td className="py-2">{member.UserName}</td>
-                                    <td className="py-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedMembers.includes(member.id)}
-                                            onChange={() => handleAttendanceChange(member.id)}
-                                            className="h-5 w-5 text-blue-600 rounded"
-                                        />
-                                    </td>
+                    <div className="overflow-y-auto max-h-64"> {/* Set a max height and allow vertical scrolling */}
+                        <table className="w-full">
+                            <thead>
+                                <tr className="text-left text-gray-500">
+                                    <th className="py-2">#</th>
+                                    <th className="py-2">Family Name</th>
+                                    <th className="py-2">Member Name</th>
+                                    <th className="py-2"></th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredMembers.map((member: any, index: number) => (
+                                    <tr key={member.id} className="border-t">
+                                        <td className="py-2">{index + 1}</td>
+                                        <td className="py-2">{member.UserFamilyName}</td>
+                                        <td className="py-2">{member.UserName}</td>
+                                        <td className="py-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedMembers.includes(member.id)}
+                                                onChange={() => handleAttendanceChange(member.id)}
+                                                className="h-5 w-5 text-blue-600 rounded"
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
 
                 {/* Save Button */}
                 <div className="p-4 border-t">
