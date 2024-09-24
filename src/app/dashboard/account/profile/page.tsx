@@ -4,9 +4,11 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import withAuth from '../../../../app/authCheck'; // Replace with your actual auth HOC path
 import { useMember, useDeleteMember } from '../../../../hooks/useMembersData'; // Adjust the hook import paths as needed
 import { toast } from 'react-toastify';
+import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 function UserProfile() {
     const [userType, setUserType] = useState('');
+    const [activeTab, setActiveTab] = useState('Account');
     const navigate = useNavigate();
     const { id } = useParams(); // Access the route params
     const token = localStorage.getItem('token') || '';
@@ -67,78 +69,97 @@ function UserProfile() {
     };
 
     return (
-        <div className="min-h-screen bg-white text-black">
-            <div className="max-w-3xl mx-auto bg-white md:shadow-lg">
-                {/* Header */}
-                <div className="flex justify-between items-center p-4">
-                    <button
-                        onClick={() => navigate(-1)} // Use navigate(-1) to go back in React Router
-                        className="text-gray-600 hover:text-gray-800 mr-4"
-                    >
-                        <ArrowLeft className="h-6 w-6 text-blue-400" />
-                    </button>
+        <>
+            <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
 
-                </div>
-
-                {/* Profile Content */}
-                <div className="p-4">
-                    {/* Profile Picture and Name */}
-                    <div className="flex justify-start items-center mb-6">
-                        <img src="/profile.png" width={100} height={100} alt="Logo" className="w-24 h-24 rounded-full object-cover mb-2" />
-                        <h1 className="ml-[20px] text-2xl font-bold">
-                            {user?.UserName} <br />
-                            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                                {user?.status || "Active"}
-                            </span>
-                        </h1>
-                    </div>
-
-                    {/* User Information */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                        {user && Object.entries(user).map(([key, value]) => {
-                            if (key !== 'UserName' && key !== 'UserChurchID' && key !== 'id' && key !== 'UserProfile' && key !== 'UserEmailVerified' && key !== 'UserGroupID' && key !== 'UserType' && key !== 'UserAddress') {
-                                return (
-                                    <div key={key}>
-                                        <p className="text-gray-500 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                        <p className="font-semibold">{value as any}</p>
-                                    </div>
-                                );
-                            }
-                            return null;
-                        })}
-                    </div>
-
-                    {/* Address */}
-                    <div className="mb-6">
-                        <p className="text-gray-500 text-sm">Address</p>
-                        <p className="font-semibold">{user?.UserAddress}</p>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="flex sm:flex-row gap-4 mb-4 mt-4">
-                        {userType == "Admin" &&
-                            (
-                                <>
-                                    <button
-                                        onClick={handleDelete}
-                                        className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
-                                    >
-                                        Delete Account
-                                    </button>
-                                </>
-                            )
-                        }
-
+            <div className="min-h-screen bg-white text-black">
+                <div className="max-w-3xl mx-auto bg-white md:shadow-lg">
+                    {/* Header */}
+                    <div className="flex justify-between items-center p-4">
                         <button
-                            onClick={handleEdit}
-                            className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"
+                            onClick={() => navigate(-1)} // Use navigate(-1) to go back in React Router
+                            className="text-gray-600 hover:text-gray-800 mr-4"
                         >
-                            Edit Profile
+                            <ArrowLeft className="h-6 w-6 text-blue-400" />
                         </button>
+
+                    </div>
+
+                    {/* Profile Content */}
+                    <div className="p-4">
+                        {/* Profile Picture and Name */}
+                        <div className="flex justify-start items-center mb-6">
+                            <img src="/profile.png" width={100} height={100} alt="Logo" className="w-24 h-24 rounded-full object-cover mb-2" />
+                            <h1 className="ml-[20px] text-2xl font-bold">
+                                {user?.UserName} <br />
+                                <span
+                                    className={`px-2 py-1 rounded-full text-xs text-white ${user?.UserStatus === "Active"
+                                            ? "bg-green-500"
+                                            : user?.UserStatus === "Inactive"
+                                                ? "bg-gray-500"
+                                                : user?.UserStatus === "Lost"
+                                                    ? "bg-red-500"
+                                                    : user?.UserStatus === "NeedVisiting"
+                                                        ? "bg-blue-500"
+                                                        : user?.UserStatus === "NeedAttention"
+                                                            ? "bg-yellow-500"
+                                                            : "bg-green-500" 
+                                        }`}
+                                >
+                                    {user?.UserStatus || "Active"}
+                                </span>
+
+                            </h1>
+                        </div>
+
+                        {/* User Information */}
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            {user && Object.entries(user).map(([key, value]) => {
+                                if (key !== 'UserName' && key !== 'UserChurchID' && key !== 'id' && key !== 'UserProfile' && key !== 'UserEmailVerified' && key !== 'UserGroupID' && key !== 'UserType' && key !== 'UserAddress') {
+                                    return (
+                                        <div key={key}>
+                                            <p className="text-gray-500 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                            <p className="font-semibold">{value as any}</p>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })}
+                        </div>
+
+                        {/* Address */}
+                        <div className="mb-6">
+                            <p className="text-gray-500 text-sm">Address</p>
+                            <p className="font-semibold">{user?.UserAddress}</p>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex sm:flex-row gap-4 mb-4 mt-4">
+                            {userType == "Admin" &&
+                                (
+                                    <>
+                                        <button
+                                            onClick={handleDelete}
+                                            className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
+                                        >
+                                            Delete Account
+                                        </button>
+                                    </>
+                                )
+                            }
+
+                            <button
+                                onClick={handleEdit}
+                                className="flex-1 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"
+                            >
+                                Edit Profile
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
+
     );
 }
 

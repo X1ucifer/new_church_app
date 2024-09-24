@@ -5,6 +5,7 @@ import { useAddendance, useEventDetails, useFilterMembers } from '../../../../ho
 import { updateAttendance } from '../../../../utils/api';
 import withAuth from '../../../../app/authCheck';
 import Swal from 'sweetalert2';
+import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 const API_URL = 'https://tjc.wizappsystem.com/church/public/api/user/newFriends';
 
@@ -160,6 +161,8 @@ const Attendance: React.FC<any> = () => {
 
     return (
         <div className="min-h-screen bg-white text-black">
+            <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
+
             <div className="max-w-3xl mx-auto bg-white md:shadow-lg">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b">

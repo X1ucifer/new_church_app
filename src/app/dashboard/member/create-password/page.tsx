@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCreatePassword } from '../../../../hooks/useRegister';
 import Swal from 'sweetalert2';
 
-export default function PasswordSetup() {
+export default function CreatePasswordSetup() {
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showNewPassword, setShowNewPassword] = useState(false)

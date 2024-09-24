@@ -198,11 +198,17 @@ Completed
     }
   }
 
+
   if (error) return <p>{error}</p>
 
   return (
     <div className="min-h-screen bg-white flex flex-col text-black">
       <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
+      {loading && (
+        <div className="flex items-center justify-center min-h-screen bg-white">
+          <div className="border-t-transparent border-solid animate-spin border-blue-500 border-8 rounded-full w-16 h-16 border-t-8"></div>
+        </div>
+      )}
       <main className="flex-grow container mx-auto p-4 md:p-8">
         {showFamiliesView ? (
           <div>
@@ -320,10 +326,8 @@ Completed
                             key={user.id}
                             className={`${index !== 0 ? 'border-t border-gray-200' : ''}`}
                           >
-                            <a
-                              href={`/users/${user.id}`}
-                              className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-150"
-                            >
+                            <Link to={`/dashboard/account/profile/${user.id}`} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-150">
+
                               <div className="flex items-center">
                                 <span className="text-gray-700 text-[15px]">{user.Username}</span>
                               </div>
@@ -331,7 +335,7 @@ Completed
                                 <span className="text-gray-700 text-[15px]">{user.UserFamilyName}</span>
                                 <div className="h-5 w-5 text-gray-400" />
                               </div>
-                            </a>
+                            </Link>
                           </li>
                         ))}
                       </ul>

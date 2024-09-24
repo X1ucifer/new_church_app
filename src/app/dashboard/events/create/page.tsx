@@ -22,7 +22,7 @@ const generateTimeOptions: any = () => {
 };
 
 const eventSchema = z.object({
-    eventName: z.string().min(1, 'Event name is required').max(50, 'Event name must be less than 50 characters'),
+    eventName: z.string().min(1, 'Event name is required').max(50, 'Event name must be less than 50 characters').regex(/^[a-zA-Z\s]+$/, 'Name cannot contain special characters'),
     eventType: z.string().min(1, 'Event type is required'),
     leader: z
         .string()
@@ -99,6 +99,9 @@ export default function NewEvent({ onClose }: any) {
                             {...register('eventName')}
                             className="w-full p-2 border rounded-md"
                             placeholder="Prayer Meeting"
+                            onInput={(e:any) => {
+                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                            }}
                         />
                         {errors.eventName && typeof errors.eventName.message === 'string' && (
                             <p className="text-red-500 text-sm">{errors?.eventName.message}</p>
@@ -139,6 +142,9 @@ export default function NewEvent({ onClose }: any) {
                             {...register('leader')}
                             className="w-full p-2 border rounded-md"
                             placeholder="Fedrick"
+                            onInput={(e:any) => {
+                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                            }}
                         />
                         {errors.leader && typeof errors.leader.message === 'string' && (
                             <p className="text-red-500 text-sm">{errors.leader.message}</p>

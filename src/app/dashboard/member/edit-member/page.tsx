@@ -16,21 +16,41 @@ export default function UpdateMember() {
         UserEmail: '',
         UserAddress: '',
         UserType: '',
+        UserStatus: '',
         UserChurchName: '',
         UserGroupID: '',
     });
-
+    const [userType, setUserType] = useState('');
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const navigate = useNavigate(); // Use useNavigate for navigation
-    const { id } = useParams<{ id: any }>(); // Use useParams to get the id from the URL
+    const navigate = useNavigate();
+    const { id } = useParams<{ id: any }>();
 
     const { mutate: editMember, isLoading: Loading, error: Error } = useEditMember();
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
-        setFormData(prevData => ({ ...prevData, [name]: value }));
+
+        // Validation for each specific field
+        if (name === 'UserPhone') {
+            // Allow only 10 digits, no characters
+            const phoneNumber = value.replace(/\D/g, ''); // Remove non-digit characters
+            if (phoneNumber.length <= 10) {
+                setFormData(prevData => ({ ...prevData, [name]: phoneNumber }));
+            }
+        } else if (name === 'UserName' || name === 'UserFamilyName') {
+            // Allow only letters (no special characters)
+            const nameWithoutSpecialChars = value.replace(/[^a-zA-Z\s]/g, ''); // Only allow alphabets and spaces
+            setFormData(prevData => ({ ...prevData, [name]: nameWithoutSpecialChars }));
+        } else if (name === 'UserAddress') {
+            // Allow letters, numbers, spaces, and , . - only
+            const address = value.replace(/[^a-zA-Z0-9\s,.-]/g, ''); // Allow specific characters
+            setFormData(prevData => ({ ...prevData, [name]: address }));
+        } else {
+            setFormData(prevData => ({ ...prevData, [name]: value }));
+        }
     };
+
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -79,6 +99,7 @@ export default function UpdateMember() {
                 UserEmail: member.UserEmail || '',
                 UserAddress: member.UserAddress || '',
                 UserType: member.UserType || '',
+                UserStatus: member.UserStatus || '',
                 UserChurchName: member.UserChurchName || '',
                 UserGroupID: member.UserGroupID || '',
             });
@@ -267,6 +288,31 @@ export default function UpdateMember() {
                                 <option value="Friend">Friend</option>
                             </select>
                         </div>
+
+                        {member.UserType !== "Admin" && (
+                            <>
+                                <div>
+                                    <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Status
+                                    </label>
+                                    <select
+                                        id="UserStatus"
+                                        name="UserStatus"
+                                        value={formData.UserStatus}
+                                        onChange={handleChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select</option>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="Lost">Lost</option>
+                                        <option value="NeedVisting">NeedVisting</option>
+                                        <option value="NeedAttention">NeedAttention</option>
+                                    </select>
+                                </div>
+                            </>
+                        )}
 
                         <div>
                             <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">

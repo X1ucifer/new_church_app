@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import { getRights } from '../../utils/api';
 import { useNavigate } from 'react-router-dom'; // Use useNavigate instead of useNavigation
+import Skeleton from 'react-loading-skeleton';
 
 export interface IAppProps {
     activeTab: string;
@@ -11,12 +12,12 @@ export interface IAppProps {
 export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
     const [accessRights, setAccessRights] = React.useState<any>(null);
     const [userType, setUserType] = React.useState<string>('');
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/'); 
+        navigate('/');
     };
 
     React.useEffect(() => {
@@ -51,7 +52,10 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
         fetchAccessRights();
     }, [navigate]);
 
-    if (!accessRights) return null;
+    // if (!accessRights) return null;
+
+    const skeletonRows = Array(4).fill(null);
+
 
     return (
         <header className="bg-white p-4 hidden md:flex items-center justify-between">
@@ -61,65 +65,80 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
             </div>
             <nav>
                 <ul className="flex space-x-4">
-                    {accessRights.dashboard === '1' && (
-                        <li>
-                            <Link to="/dashboard"> {/* Change href to to */}
-                                <button
-                                    onClick={() => setActiveTab('Home')}
-                                    className={`${activeTab === 'Home' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
-                                >
-                                    Home
-                                </button>
-                            </Link>
-                        </li>
-                    )}
-                    {accessRights.report === '1' && (
-                        <li>
-                            <Link to="/dashboard/reports"> {/* Change href to to */}
-                                <button
-                                    onClick={() => setActiveTab('Report')}
-                                    className={`${activeTab === 'Report' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
-                                >
-                                    Report
-                                </button>
-                            </Link>
-                        </li>
-                    )}
-                    {accessRights.events === '1' && (
-                        <li>
-                            <Link to="/dashboard/events"> {/* Change href to to */}
-                                <button
-                                    onClick={() => setActiveTab('Events')}
-                                    className={`${activeTab === 'Events' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
-                                >
-                                    Events
-                                </button>
-                            </Link>
-                        </li>
-                    )}
-                    {accessRights.settings === '1' ? (
-                        <li>
-                            <Link to="/dashboard/account"> {/* Change href to to */}
-                                <button
-                                    onClick={() => setActiveTab('Account')}
-                                    className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
-                                >
-                                    Account
-                                </button>
-                            </Link>
-                        </li>
+
+                    {!accessRights ? (
+                        skeletonRows.map((_, index) => (
+                            <li key={index}>
+                                <div className="flex flex-col items-center">
+                                    <Skeleton width={40} height={10} className="mt-2" />
+                                </div>
+                            </li>
+                        ))
                     ) : (
                         <>
-                            <li>
-                                <button
-                                    onClick={logout}
-                                    className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
-                                >
-                                    Logout
-                                </button>
-                            </li>
+                            {accessRights.dashboard === '1' && (
+                                <li>
+                                    <Link to="/dashboard"> {/* Change href to to */}
+                                        <button
+                                            onClick={() => setActiveTab('Home')}
+                                            className={`${activeTab === 'Home' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                        >
+                                            Home
+                                        </button>
+                                    </Link>
+                                </li>
+                            )}
+                            {accessRights.report === '1' && (
+                                <li>
+                                    <Link to="/dashboard/reports"> {/* Change href to to */}
+                                        <button
+                                            onClick={() => setActiveTab('Report')}
+                                            className={`${activeTab === 'Report' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                        >
+                                            Report
+                                        </button>
+                                    </Link>
+                                </li>
+                            )}
+                            {accessRights.events === '1' && (
+                                <li>
+                                    <Link to="/dashboard/events"> {/* Change href to to */}
+                                        <button
+                                            onClick={() => setActiveTab('Events')}
+                                            className={`${activeTab === 'Events' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                        >
+                                            Events
+                                        </button>
+                                    </Link>
+                                </li>
+                            )}
+                            {accessRights.settings === '1' ? (
+                                <li>
+                                    <Link to="/dashboard/account"> {/* Change href to to */}
+                                        <button
+                                            onClick={() => setActiveTab('Account')}
+                                            className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                        >
+                                            Account
+                                        </button>
+                                    </Link>
+                                </li>
+                            ) : (
+                                <>
+                                    <li>
+                                        <button
+                                            onClick={logout}
+                                            className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                        >
+                                            Logout
+                                        </button>
+                                    </li>
+                                </>
+                            )}
                         </>
-                    )}
+                    )
+                    }
+
 
 
                 </ul>

@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import { updateRights, getRights } from '../../../../utils/api';
 import Swal from 'sweetalert2';
+import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 interface AccessRight {
     id: number
@@ -27,7 +28,7 @@ export default function UsageRights() {
 
     // const router = useRouter();
 
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     useEffect(() => {
         const fetchRights = async () => {
             try {
@@ -140,69 +141,74 @@ export default function UsageRights() {
             setLoading(false);
         }
     };
+    const [activeTab, setActiveTab] = useState('Account');
 
 
     return (
-        <div className="min-h-screen bg-white text-black">
-            <div className="max-w-2xl mx-auto bg-white md:shadow-lg">
-                {/* Header */}
-                <div className="flex items-center p-4 border-b">
-                    <button onClick={() => navigate(-1)} className="text-blue-500 hover:text-blue-700 mr-4">
-                        <ArrowLeft className="h-6 w-6" />
-                    </button>
-                    <h1 className="text-xl font-medium">Settings</h1>
-                </div>
+        <>
+            <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
 
-                {/* Main Content */}
-                <div className="p-4">
-                    <h2 className="text-2xl font-bold mb-4">Usage Rights</h2>
-
-                    {/* Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50">
-                                    <th className="border p-2 text-left">#</th>
-                                    <th className="border p-2 text-left">Access Rights</th>
-                                    <th className="border p-2 text-center">Local Pastor</th>
-                                    <th className="border p-2 text-center">Local Exco</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {accessRights.map((right) => (
-                                    <tr key={right.id}>
-                                        <td className="border p-2">{right.id}</td>
-                                        <td className="border p-2">{right.name}</td>
-                                        <td className="border p-2 text-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={right.localPastor}
-                                                onChange={() => handleCheckboxChange(right.id, 'localPastor')}
-                                                className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                                            />
-                                        </td>
-                                        <td className="border p-2 text-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={right.localExec}
-                                                onChange={() => handleCheckboxChange(right.id, 'localExec')}
-                                                className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            <div className="min-h-screen bg-white text-black">
+                <div className="max-w-2xl mx-auto bg-white md:shadow-lg">
+                    {/* Header */}
+                    <div className="flex items-center p-4 border-b">
+                        <button onClick={() => navigate(-1)} className="text-blue-500 hover:text-blue-700 mr-4">
+                            <ArrowLeft className="h-6 w-6" />
+                        </button>
+                        <h1 className="text-xl font-medium">Settings</h1>
                     </div>
 
-                    {/* Edit Profile Button */}
-                    <button onClick={handleSave} disabled={loading}
+                    {/* Main Content */}
+                    <div className="p-4">
+                        <h2 className="text-2xl font-bold mb-4">Usage Rights</h2>
 
-                        className="w-full bg-blue-500 text-white py-2 rounded-md mt-6 hover:bg-blue-600 transition-colors duration-300">
-                        {loading ? 'Saving...' : 'Save Changes'}
-                    </button>
+                        {/* Table */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50">
+                                        <th className="border p-2 text-left">#</th>
+                                        <th className="border p-2 text-left">Access Rights</th>
+                                        <th className="border p-2 text-center">Local Pastor</th>
+                                        <th className="border p-2 text-center">Local Exco</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {accessRights.map((right) => (
+                                        <tr key={right.id}>
+                                            <td className="border p-2">{right.id}</td>
+                                            <td className="border p-2">{right.name}</td>
+                                            <td className="border p-2 text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={right.localPastor}
+                                                    onChange={() => handleCheckboxChange(right.id, 'localPastor')}
+                                                    className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                                                />
+                                            </td>
+                                            <td className="border p-2 text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={right.localExec}
+                                                    onChange={() => handleCheckboxChange(right.id, 'localExec')}
+                                                    className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Edit Profile Button */}
+                        <button onClick={handleSave} disabled={loading}
+
+                            className="w-full bg-blue-500 text-white py-2 rounded-md mt-6 hover:bg-blue-600 transition-colors duration-300">
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

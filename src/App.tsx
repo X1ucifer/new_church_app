@@ -7,6 +7,7 @@ import AccountSettings from './app/dashboard/account/page';
 import MembersData from './app/dashboard/account/members/page';
 import UsageRights from './app/dashboard/account/settings/page';
 import ChangePassword from './app/dashboard/account/change-password/page';
+import CreatePasswordSetup from './app/dashboard/member/create-password/page';
 import ForgotPassword from './app/forgot-password/page';
 import OTPVerification from './app/forgot-password/otp/page';
 import PasswordSetup from './app/forgot-password/reset-password/page';
@@ -42,6 +43,7 @@ const AuthenticatedDashboard = withAuth(Dashboardpage);
         <Route path="/dashboard/events" element={<ChurchEvents />} />
         <Route path="/dashboard/add-friend" element={<AddFriend />} />
         <Route path="/dashboard/account" element={<AccountSettings />} />
+        <Route path="/dashboard/member/create-password" element={<CreatePasswordSetup />} />
 
         {/* Shamira */}
         <Route path="/dashboard/account/station-member" element={<StationMembersData />} />

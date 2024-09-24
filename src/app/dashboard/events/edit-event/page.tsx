@@ -16,13 +16,33 @@ interface EventDetails {
   EventChurchID: string;
 }
 
+const generateTimeOptions: any = () => {
+  const options: any = [];
+  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+  const minutes = ['00', '15', '30', '45'];
+
+  hours.forEach(hour => {
+    minutes.forEach(minute => {
+      options.push(`${hour}:${minute} AM`);
+      options.push(`${hour}:${minute} PM`);
+    });
+  });
+
+  return options;
+};
+
 const EditEvent: React.FC<any> = ({ onClose }) => {
   const [eventName, setEventName] = useState<string>('');
   const [eventType, setEventType] = useState<string>('');
   const [leader, setLeader] = useState<string>('');
-  const [time, setTime] = useState<any>('10:00');
+  const [time, setTime] = useState<any>('10:00 AM');
   const [date, setDate] = useState<string>('');
   const [pastoralChurch, setPastoralChurch] = useState<string>('');
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const timeOptions = generateTimeOptions();
+
 
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>(); // Extracting event id from URL params
@@ -93,6 +113,9 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
               onChange={(e) => setEventName(e.target.value)}
               className="w-full p-2 border rounded-md"
               placeholder="Prayer Meeting"
+              onInput={(e:any) => {
+                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+            }}
             />
           </div>
           <div>
@@ -129,6 +152,9 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
               onChange={(e) => setLeader(e.target.value)}
               className="w-full p-2 border rounded-md"
               placeholder="Fedrick"
+              onInput={(e:any) => {
+                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+            }}
             />
           </div>
           <div className="flex space-x-4">
@@ -137,7 +163,20 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
                 Time
               </label>
               <div className="relative">
-                <TimePicker id="time" value={time} onChange={setTime} format="hh:mm a" className="w-full p-2 border rounded-md" />
+                {/* <TimePicker id="time" value={time} onChange={setTime} format="hh:mm a" className="w-full p-2 border rounded-md" /> */}
+                <select
+                  id="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full p-2 border rounded-md appearance-none"
+                >
+                  {generateTimeOptions().map((option: string) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+
               </div>
             </div>
             <div className="flex-1">

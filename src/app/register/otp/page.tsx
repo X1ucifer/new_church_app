@@ -68,7 +68,7 @@ export default function RegisterOTPVerification() {
 
                     <h2 className="text-2xl font-bold mb-[5px] md:text-2xl md:font-bold md:text-center md:mb-2">Enter OTP</h2>
                     <p className="text-center text-gray-600 mb-[27px] md:mb-6">
-                        A 6 digit code has been sent to john@gmail.com
+                        A 6 digit code has been sent to your Email
                     </p>
 
                     <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
