@@ -62,7 +62,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
       const [day, month, year] = event.EventDate.split('-');
       const formattedDate = `${year}-${month}-${day}`;
       setDate(formattedDate);
-      setPastoralChurch(event.EventChurchID);
+      setPastoralChurch(event.EventChurchName);
     }
   }, [event]);
 
@@ -77,7 +77,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
           leader,
           time,
           date,
-          churchID: pastoralChurch,
+          EventChurchName: pastoralChurch,
         },
       },
       {
@@ -109,13 +109,14 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
             <input
               type="text"
               id="eventName"
+              maxLength={20}
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
               className="w-full p-2 border rounded-md"
               placeholder="Prayer Meeting"
-              onInput={(e:any) => {
+              onInput={(e: any) => {
                 e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-            }}
+              }}
             />
           </div>
           <div>
@@ -148,13 +149,14 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
             <input
               type="text"
               id="leader"
+              maxLength={20}
               value={leader}
               onChange={(e) => setLeader(e.target.value)}
               className="w-full p-2 border rounded-md"
               placeholder="Fedrick"
-              onInput={(e:any) => {
+              onInput={(e: any) => {
                 e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-            }}
+              }}
             />
           </div>
           <div className="flex space-x-4">
@@ -195,7 +197,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
               </div>
             </div>
           </div>
-          <div>
+          {/* <div>
             <label htmlFor="pastoralChurch" className="block text-sm font-medium text-gray-700 mb-1">
               Pastoral Church Name
             </label>
@@ -221,6 +223,21 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
               </select>
               <ChevronDown className="absolute right-2 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
             </div>
+          </div> */}
+          <div>
+            <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
+            </label>
+            <input
+              type="text"
+              id="EventChurchName"
+              maxLength={30}
+              value={pastoralChurch}
+                onChange={(e) => setPastoralChurch(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              onInput={(e: any) => {
+                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+              }}
+            />
           </div>
           <button
             type="submit"

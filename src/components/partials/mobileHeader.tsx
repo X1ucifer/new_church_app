@@ -53,7 +53,7 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
     const skeletonRows = Array(4).fill(null);
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden ">
             <ul className="flex justify-around p-2">
                 {/* Render skeleton if accessRights is not yet loaded */}
                 {!accessRights ? (

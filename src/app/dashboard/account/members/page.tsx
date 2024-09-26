@@ -35,8 +35,13 @@ function MembersData() {
 
     useEffect(() => {
         const observer = new IntersectionObserver(
+            
             (entries) => {
+                console.log("dd", hasNextPage)
+
                 if (entries[0].isIntersecting && hasNextPage) {
+                    console.log("nesyt")
+
                     fetchNextPage();
                 }
             },
@@ -119,7 +124,7 @@ function MembersData() {
                                 ) : (
                                     (searchTerm ? searchedMembers : paginatedMembers)?.length ? (
                                         (searchTerm ? searchedMembers : paginatedMembers).map((member: any, index: number) => (
-                                            <tr key={member.id} className="border-t" onClick={() => navigate(`/dashboard/account/profile/${member.id}`,)}
+                                            <tr key={member.id} className="border-t cursor-pointer" onClick={() => navigate(`/dashboard/account/profile/${member.id}`,)}
                                             >
                                                 <td className="px-4 py-2">{index + 1}</td>
                                                 <td className="px-4 py-2">{member.UserFamilyName}</td>

@@ -135,7 +135,7 @@ export default function ChurchLogin() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                Email / Phone
+                                Email 
                             </label>
                             <input
                                 type="text"

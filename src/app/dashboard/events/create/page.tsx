@@ -30,7 +30,7 @@ const eventSchema = z.object({
         .regex(/^[a-zA-Z\s]*$/, 'Leader name can only contain letters and spaces'),
     time: z.string().min(1, 'Time is required'),
     date: z.string().min(1, 'Date is required'),
-    pastoralChurch: z.string().min(1, 'Pastoral Church is required'),
+    EventChurchName: z.string().min(1, 'Pastoral Church name is required').regex(/^[a-zA-Z\s]*$/, 'Leader name can only contain letters and spaces'),
 })
 
 export default function NewEvent({ onClose }: any) {
@@ -68,7 +68,6 @@ export default function NewEvent({ onClose }: any) {
         addEvent(
             {
                 ...data,
-                churchID: data.pastoralChurch,
             },
             {
                 onSuccess: () => {
@@ -96,10 +95,11 @@ export default function NewEvent({ onClose }: any) {
                         <input
                             type="text"
                             id="eventName"
+                            maxLength={20}
                             {...register('eventName')}
                             className="w-full p-2 border rounded-md"
                             placeholder="Prayer Meeting"
-                            onInput={(e:any) => {
+                            onInput={(e: any) => {
                                 e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                             }}
                         />
@@ -139,10 +139,11 @@ export default function NewEvent({ onClose }: any) {
                         <input
                             type="text"
                             id="leader"
+                            maxLength={20}
                             {...register('leader')}
                             className="w-full p-2 border rounded-md"
                             placeholder="Fedrick"
-                            onInput={(e:any) => {
+                            onInput={(e: any) => {
                                 e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                             }}
                         />
@@ -194,7 +195,7 @@ export default function NewEvent({ onClose }: any) {
                             )}
                         </div>
                     </div>
-                    <div>
+                    {/* <div>
                         <label htmlFor="pastoralChurch" className="block text-sm font-medium text-gray-700 mb-1">
                             Pastoral Church Name
                         </label>
@@ -219,7 +220,25 @@ export default function NewEvent({ onClose }: any) {
                         {errors.pastoralChurch && typeof errors.pastoralChurch.message === 'string' && (
                             <p className="text-red-500 text-sm mt-1">{errors.pastoralChurch.message}</p>
                         )}
+                    </div> */}
+                    <div>
+                        <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
+                        </label>
+                        <input
+                            type="text"
+                            id="EventChurchName"
+                            maxLength={30}
+                            {...register('EventChurchName')}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            onInput={(e: any) => {
+                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                            }}
+                        />
+                        {errors.EventChurchName && typeof errors.EventChurchName.message === 'string' && (
+                            <p className="text-red-500 text-sm">{errors?.EventChurchName.message}</p>
+                        )}
                     </div>
+
                     <button
                         type="submit"
                         className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors duration-300"

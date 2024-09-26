@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DesktopHeader } from '../../../../../components/partials/desktopHeader';
+import withAuth from '../../../../../app/authCheck';
 
 const userSchema = z.object({
     UserName: z
@@ -34,9 +35,11 @@ const userSchema = z.object({
     UserEmail: z.string().email('Invalid email format'),
     UserAddress: z.string().min(1, 'Address is required'),
     UserType: z.string().min(1, 'User type is required'),
+    UserGroupID: z.string().min(1, 'Group is required'),
+    UserStatus: z.string().min(1, 'User status is required'),
     UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
 });
-export default function AddFriend() {
+function AddFriend() {
 
     const [formData, setFormData] = useState({
         UserName: '',
@@ -88,21 +91,23 @@ export default function AddFriend() {
         addFriend(completeData, {
             onSuccess: (data) => {
 
-                navigate('/dashboard/events');
-
-                // Swal.fire({
-                //     icon: 'success',
-                //     title: 'Registration Successful',
-                //     text: 'User has been registered successfully!',
-                //     confirmButtonText: 'OK',
-                // });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registration Successful',
+                    text: 'User has been successfully added!',
+                    confirmButtonText: 'OK',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        navigate(-1);
+                    }
+                });
 
             },
             onError(error: any) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Registration Failed',
-                    text: `Registration failed due to ${error}`,
+                    text: `${error}`,
                     confirmButtonText: 'OK',
                 });
             }
@@ -141,6 +146,7 @@ export default function AddFriend() {
                                     type="text"
                                     id="UserName"
                                     {...register('UserName')}
+                                    maxLength={20}
                                     onInput={(e: any) => {
                                         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                                     }}
@@ -156,6 +162,7 @@ export default function AddFriend() {
                                 <input
                                     type="text"
                                     id="UserFamilyName"
+                                    maxLength={20}
                                     {...register('UserFamilyName')}
                                     onInput={(e: any) => {
                                         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
@@ -226,8 +233,13 @@ export default function AddFriend() {
                                     type="tel"
                                     id="UserPhone"
                                     {...register('UserPhone')}
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/\D/g, '');
+                                    onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+                                        if (value.length <= 10) { // Allow max 10 digits
+                                            e.target.value = value;
+                                        } else {
+                                            e.target.value = value.slice(0, 10); // Trim to 10 digits
+                                        }
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 />
@@ -256,7 +268,7 @@ export default function AddFriend() {
                                     {...register('UserAddress')}
                                     rows={3}
                                     onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._-]/g, '');
+                                        e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._\/-]/g, '');
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 ></textarea>
@@ -264,6 +276,33 @@ export default function AddFriend() {
                                     <p className="text-red-500 text-sm">{errors?.UserAddress.message}</p>
                                 )}
                             </div>
+
+                            <div>
+                                <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Group
+                                </label>
+                                <select
+                                    id="UserType"
+                                    {...register('UserGroupID')}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="">Select Group</option>
+                                    {isLoading ? (
+                                        <option>Loading groups...</option>
+                                    ) : error ? (
+                                        <option>Error loading groups</option>
+                                    ) : (
+                                        groups?.map((group: any) => (
+                                            <option key={group.id} value={group.id}>
+                                                {group.GroupName}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
+                            {errors.UserGroupID && typeof errors.UserGroupID.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserGroupID.message}</p>
+                            )}
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -275,6 +314,7 @@ export default function AddFriend() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 >
                                     <option value="">Select</option>
+                                    <option value="Member">Member</option>
                                     <option value="Outstation Member">Outstation Member</option>
                                     <option value="Friend">Friend</option>
                                 </select>
@@ -284,12 +324,35 @@ export default function AddFriend() {
                             )}
 
                             <div>
+                                <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Status
+                                </label>
+                                <select
+                                    id="UserStatus"
+                                    {...register('UserStatus')}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Lost">Lost</option>
+                                    <option value="NeedVisting">NeedVisting</option>
+                                    <option value="NeedAttention">NeedAttention</option>
+                                </select>
+                            </div>
+                            {errors.UserStatus && typeof errors.UserStatus.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserStatus.message}</p>
+                            )}
+
+
+                            <div>
                                 <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
                                 </label>
                                 <input
                                     type="text"
                                     id="UserChurchName"
                                     {...register('UserChurchName')}
+                                    maxLength={30}
                                     onInput={(e: any) => {
                                         e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                                     }}
@@ -316,3 +379,5 @@ export default function AddFriend() {
         </>
     )
 }
+
+export default withAuth(AddFriend);

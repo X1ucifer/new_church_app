@@ -35,7 +35,7 @@ function FriendData() {
                             <ArrowLeft className="h-5 w-5 mr-4" />
                             <p className='text-black font-medium'>Friends</p>
                         </button>
-                        <Link to="/dashboard/member" >
+                        <Link to="/dashboard/add-friend" >
                             <button className="text-blue-500 hover:text-blue-700 flex items-center">
                                 <Plus className="h-5 w-5 mr-1" />
                                 New

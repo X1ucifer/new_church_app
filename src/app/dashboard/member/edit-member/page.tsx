@@ -5,6 +5,22 @@ import { useGroups, useRegister } from '../../../../hooks/useRegister'
 import Swal from 'sweetalert2';
 import { useEditMember, useMember } from '../../../../hooks/useMembersData'
 
+interface FormDataType {
+    UserName: string;
+    UserFamilyName: string;
+    UserGender: string;
+    UserMaritalStatus: string;
+    UserDOB: string;
+    UserPhone: string;
+    UserEmail: string;
+    UserAddress: string;
+    UserType: string;
+    UserStatus: string;
+    UserChurchName: string;
+    UserGroupID: string;
+}
+
+
 export default function UpdateMember() {
     const [formData, setFormData] = useState({
         UserName: '',
@@ -21,7 +37,9 @@ export default function UpdateMember() {
         UserGroupID: '',
     });
     const [userType, setUserType] = useState('');
-    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [profileImage, setProfileImage] = useState<File | null>(null);
+    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);  // For preview
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const { id } = useParams<{ id: any }>();
@@ -52,12 +70,20 @@ export default function UpdateMember() {
     };
 
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleImageChange = (e: any) => {
+        const file: any = e.target.files?.[0];
         if (file) {
+
+            const img = {
+                preview: URL.createObjectURL(e.target.files[0]),
+                data: e.target.files[0],
+            }
+            setProfileImage(e.target.files[0])
+
+            // Generate a preview using FileReader (for UI display)
             const reader = new FileReader();
             reader.onloadend = () => {
-                setProfileImage(reader.result as string);
+                setProfileImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -68,15 +94,27 @@ export default function UpdateMember() {
     const { data: groups, isLoading, error } = useGroups(token);
     const { data: member, isLoading: editLoading, error: editError } = useMember(token, id as any);
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        const dataToSend = new FormData();
+
+        // Append the profile image if it exists
+        if (profileImage) {
+            dataToSend.append('UserProfile', profileImage);
+        }
+
+        // Append all form data
+        Object.keys(formData).forEach(key => {
+            dataToSend.append(key, formData[key as keyof FormDataType]); // Use keyof to assert type
+        });
+
         try {
-            await editMember({ token, id, data: formData }, {
+            await editMember({ token, id, data: dataToSend }, {
                 onSuccess() {
                     navigate(`/dashboard/account/profile/${id}`);
-                }
+                },
             });
-
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -86,6 +124,7 @@ export default function UpdateMember() {
             });
         }
     };
+
 
     useEffect(() => {
         if (member) {
@@ -104,11 +143,13 @@ export default function UpdateMember() {
                 UserGroupID: member.UserGroupID || '',
             });
             // Set profile image if available
-            if (member.profileImage) {
-                setProfileImage(member.profileImage);
+            if (member.UserProfile) {
+                setProfileImagePreview(member.UserProfile);
             }
         }
     }, [member]);
+
+    console.log("d", profileImagePreview)
 
 
     return (
@@ -129,8 +170,8 @@ export default function UpdateMember() {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="flex md:justify-center mb-6">
                             <div className="relative">
-                                {profileImage ? (
-                                    <img src={profileImage} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+                                {profileImagePreview ? (
+                                    <img src={profileImagePreview} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
                                 ) : (
                                     <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
                                         <Camera className="h-8 w-8 text-gray-400" />
@@ -159,6 +200,7 @@ export default function UpdateMember() {
                                 type="text"
                                 id="UserName"
                                 name="UserName"
+                                maxLength={20}
                                 value={formData.UserName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -172,6 +214,7 @@ export default function UpdateMember() {
                                 type="text"
                                 id="UserFamilyName"
                                 name="UserFamilyName"
+                                maxLength={20}
                                 value={formData.UserFamilyName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -349,6 +392,7 @@ export default function UpdateMember() {
                                 type="text"
                                 id="UserChurchName"
                                 name="UserChurchName"
+                                maxLength={30}
                                 value={formData.UserChurchName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"

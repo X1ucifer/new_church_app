@@ -54,8 +54,8 @@ export const useAddEvent = (token: string) => {
   const dispatch = useDispatch();
 
   return useMutation(
-    ({ eventName, eventType, leader, time, date, churchID }: any) =>
-      addEvent(token, eventName, eventType, leader, time, date, churchID),
+    ({ eventName, eventType, leader, time, date, EventChurchName }: any) =>
+      addEvent(token, eventName, eventType, leader, time, date, EventChurchName),
     {
       onMutate: () => {
       },

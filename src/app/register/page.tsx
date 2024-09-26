@@ -7,6 +7,7 @@ import { useRegister, useChurches } from '../../hooks/useRegister';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import Swal from 'sweetalert2';
 
 const schema = z.object({
     UserName: z.string().min(1, 'Name is required'),
@@ -34,9 +35,12 @@ export default function Register() {
         UserAddress: '',
         UserType: '',
         pastoralChurchName: '',
+        UserProfile: null,
     })
 
-    const [profileImage, setProfileImage] = useState<string | null>(null)
+    const [profileImage, setProfileImage] = useState<File | null>(null);
+    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);  // For preview
+
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useNavigate();
 
@@ -48,39 +52,72 @@ export default function Register() {
         setFormData(prevData => ({ ...prevData, [name]: value }))
     }
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+    const handleImageChange = (e: any) => {
+        const file: any = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setProfileImage(reader.result as string)
+
+            const img = {
+                preview: URL.createObjectURL(e.target.files[0]),
+                data: e.target.files[0],
             }
-            reader.readAsDataURL(file)
+            setProfileImage(e.target.files[0])
+
+            // Generate a preview using FileReader (for UI display)
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
-    }
+    };
 
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: zodResolver(schema),
     });
 
+    console.log("image", profileImage)
 
     const onSubmit = (data: any) => {
-        const formDataWithImage = { ...data, profileImage };
-    
-        // Call the mutate function from useRegister hook
-        mutate(formDataWithImage, {
-          onSuccess: (data) => {
-            localStorage.setItem('UserEmail', data.UserEmail);
-            router('/register/set-password');
+        let formData: any = new FormData();
 
-            console.log('Registration successful:', data);
-          },
-          onError: (error) => {
-            console.error('Registration failed:', error);
-          },
+        if (profileImage) {
+            formData.append('UserProfile', profileImage);
+        } else {
+            formData.append('UserProfile', '');
+        }
+
+        Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
         });
-      };
-    
+
+        // Debug log for checking the FormData contents
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value); // Should show 'UserProfile' and the image file
+        }
+
+
+        // Call the mutate function from useRegister hook with FormData
+        mutate(formData, {
+            onSuccess: (data) => {
+                localStorage.setItem('UserEmail', data.UserEmail);
+                router('/register/set-password');
+
+                console.log('Registration successful:', data);
+            },
+            onError: (error) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: `${error}`,
+                    confirmButtonText: 'OK',
+                });
+                console.error('Registration failed:', error);
+            },
+        });
+    };
+
+
+
 
     return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
@@ -99,8 +136,8 @@ export default function Register() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="flex md:justify-center mb-6">
                             <div className="relative">
-                                {profileImage ? (
-                                    <img src={profileImage} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+                                {profileImagePreview ? (
+                                    <img src={profileImagePreview} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
                                 ) : (
                                     <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
                                         <Camera className="h-8 w-8 text-gray-400" />
@@ -128,7 +165,11 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserName"
+                                maxLength={20}
                                 {...register('UserName')}
+                                onInput={(e: any) => {
+                                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserName && typeof errors.UserName.message === 'string' && (
@@ -141,8 +182,12 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserFamilyName"
+                                maxLength={20}
                                 {...register('UserFamilyName')}
                                 onChange={handleChange}
+                                onInput={(e: any) => {
+                                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserFamilyName && typeof errors.UserFamilyName.message === 'string' && (
@@ -205,6 +250,14 @@ export default function Register() {
                             <input
                                 type="tel"
                                 id="UserPhone"
+                                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+                                    if (value.length <= 10) { // Allow max 10 digits
+                                        e.target.value = value;
+                                    } else {
+                                        e.target.value = value.slice(0, 10); // Trim to 10 digits
+                                    }
+                                }}
                                 {...register('UserPhone')}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
@@ -232,6 +285,9 @@ export default function Register() {
                                 id="UserAddress"
                                 {...register('UserAddress')}
                                 rows={3}
+                                onInput={(e: any) => {
+                                    e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._\/-]/g, '');
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             ></textarea>
                             {errors.UserAddress && typeof errors.UserAddress.message === 'string' && (
@@ -264,7 +320,11 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserChurchName"
+                                maxLength={30}
                                 {...register('UserChurchName')}
+                                onInput={(e: any) => {
+                                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserChurchName && typeof errors.UserChurchName.message === 'string' && (

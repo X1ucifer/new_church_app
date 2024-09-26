@@ -39,7 +39,7 @@ function ChangePassword() {
             {
                 onSuccess: () => {
                     setSuccess('Password changed successfully.');
-                    navigate('/dashboard');
+                    navigate('/dashboard/account');
                 },
                 onError: (error: Error) => {
                     setError('Failed to change password. Please try again.');

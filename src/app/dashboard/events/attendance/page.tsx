@@ -105,8 +105,22 @@ const Attendance: React.FC<any> = () => {
 
 
     const handleSubmitAttendance = async () => {
+        if (selectedMembers.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Please select users',
+                confirmButtonText: 'OK',
+            });
+            return;
+        }
         try {
-            await updateAttendance(token, userId, selectedMembers);
+            const data = {
+                UserType: activeTab,
+                users: selectedMembers,
+            };
+
+            console.log("ioo", data)
+            await updateAttendance(token, userId, data);
             Swal.fire({
                 icon: 'success',
                 title: 'Successful',
@@ -115,6 +129,12 @@ const Attendance: React.FC<any> = () => {
             });
         } catch (error) {
             console.error('Error submitting attendance:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'An error occurred',
+                text: 'Please try again later.',
+                confirmButtonText: 'OK',
+            });
         }
     };
 

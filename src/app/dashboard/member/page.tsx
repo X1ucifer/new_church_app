@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DesktopHeader } from '../../../components/partials/desktopHeader'
+import withAuth from '../../../app/authCheck'
 
 const userSchema = z.object({
     UserName: z
@@ -35,13 +36,14 @@ const userSchema = z.object({
 
     UserEmail: z.string().email('Invalid email format'),
     UserAddress: z.string().min(1, 'Address is required'),
+    UserStatus: z.string().min(1, 'User status is required'),
     UserType: z.string().min(1, 'User type is required'),
     UserGroupID: z.string().min(1, 'Group is required'),
     UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
 });
 
 
-export default function AddMember() {
+function AddMember() {
     const [activeTab, setActiveTab] = useState<string>('Member');
     const [formData, setFormData] = useState({
         UserName: '',
@@ -57,7 +59,8 @@ export default function AddMember() {
         UserGroupID: '',
     })
 
-    const [profileImage, setProfileImage] = useState<string | null>(null)
+    const [profileImage, setProfileImage] = useState<File | null>(null);
+    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);  // For preview
     const fileInputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate();
 
@@ -69,16 +72,24 @@ export default function AddMember() {
         setFormData(prevData => ({ ...prevData, [name]: value }))
     }
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+    const handleImageChange = (e: any) => {
+        const file: any = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setProfileImage(reader.result as string)
+
+            const img = {
+                preview: URL.createObjectURL(e.target.files[0]),
+                data: e.target.files[0],
             }
-            reader.readAsDataURL(file)
+            setProfileImage(e.target.files[0])
+
+            // Generate a preview using FileReader (for UI display)
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
-    }
+    };
 
     const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
     const parsedData = userData ? JSON.parse(userData) : null;
@@ -89,8 +100,21 @@ export default function AddMember() {
     });
 
     const onSubmit: any = (data: any) => {
-        const completeData = { ...data, profileImage };
-        registerUser(completeData, {
+        let formData: any = new FormData();
+
+        if (profileImage) {
+            formData.append('UserProfile', profileImage);
+        } else {
+            console.error('Profile image is missing!');
+            formData.append('UserProfile', '');
+        }
+
+        Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+        });
+
+
+        registerUser(formData, {
             onSuccess: (data) => {
                 localStorage.setItem('UserEmail', data.UserEmail);
                 if (data.UserType === "Admin" || data.UserType === "Pastor" || data.UserType === "Exco") {
@@ -128,45 +152,6 @@ export default function AddMember() {
 
 
 
-    // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    //     e.preventDefault();
-    //     const completeData = { ...formData, profileImage };
-
-    //     registerUser(completeData, {
-    //         onSuccess: (data) => {
-    //             localStorage.setItem('UserEmail', formData.UserEmail);
-    //             if (data.UserType === "Admin" || data.UserType === "Pastor" || data.UserType === "Exco") {
-    //                 router.push('/dashboard/member/create-password');
-    //             } else {
-    //                 setFormData({
-    // UserName: '',
-    // UserFamilyName: '',
-    // UserGender: '',
-    // UserMaritalStatus: '',
-    // UserDOB: '',
-    // UserPhone: '',
-    // UserEmail: '',
-    // UserAddress: '',
-    // UserType: '',
-    // UserChurchName: '',
-    // UserGroupID: '',
-    //                 });
-    //                 setProfileImage(null);
-    //                 fileInputRef.current && (fileInputRef.current.value = '');
-
-    //                 Swal.fire({
-    //                     icon: 'success',
-    //                     title: 'Registration Successful',
-    //                     text: 'User has been registered successfully!',
-    //                     confirmButtonText: 'OK',
-    //                 });
-    //             }
-
-    //         },
-
-    //     });
-    // };
-
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
     const { data: groups, isLoading, error } = useGroups(token);
@@ -195,8 +180,8 @@ export default function AddMember() {
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div className="flex md:justify-center mb-6">
                                 <div className="relative">
-                                    {profileImage ? (
-                                        <img src={profileImage} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+                                    {profileImagePreview ? (
+                                        <img src={profileImagePreview} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
                                     ) : (
                                         <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
                                             <Camera className="h-8 w-8 text-gray-400" />
@@ -226,6 +211,7 @@ export default function AddMember() {
                                 <input
                                     type="text"
                                     id="UserName"
+                                    maxLength={20}
                                     {...register('UserName')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     onInput={(e: any) => {
@@ -242,6 +228,7 @@ export default function AddMember() {
                                 <input
                                     type="text"
                                     id="UserFamilyName"
+                                    maxLength={20}
                                     {...register('UserFamilyName')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     onInput={(e: any) => {
@@ -315,8 +302,13 @@ export default function AddMember() {
                                     id="UserPhone"
                                     {...register('UserPhone')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/\D/g, '');
+                                    onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+                                        if (value.length <= 10) { // Allow max 10 digits
+                                            e.target.value = value;
+                                        } else {
+                                            e.target.value = value.slice(0, 10); // Trim to 10 digits
+                                        }
                                     }}
                                 />
                                 {errors.UserPhone && typeof errors.UserPhone.message === 'string' && (
@@ -346,7 +338,7 @@ export default function AddMember() {
                                     rows={3}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._-]/g, '');
+                                        e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._\/-]/g, '');
                                     }}
                                 ></textarea>
                                 {errors.UserAddress && typeof errors.UserAddress.message === 'string' && (
@@ -375,6 +367,27 @@ export default function AddMember() {
                             </div>
                             {errors.UserType && typeof errors.UserType.message === 'string' && (
                                 <p className="text-red-500 text-sm">{errors?.UserType.message}</p>
+                            )}
+
+                            <div>
+                                <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Status
+                                </label>
+                                <select
+                                    id="UserStatus"
+                                    {...register('UserStatus')}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Lost">Lost</option>
+                                    <option value="NeedVisting">NeedVisting</option>
+                                    <option value="NeedAttention">NeedAttention</option>
+                                </select>
+                            </div>
+                            {errors.UserStatus && typeof errors.UserStatus.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors?.UserStatus.message}</p>
                             )}
 
                             <div>
@@ -410,6 +423,7 @@ export default function AddMember() {
                                 <input
                                     type="text"
                                     id="UserChurchName"
+                                    maxLength={30}
                                     {...register('UserChurchName')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     onInput={(e: any) => {
@@ -438,3 +452,5 @@ export default function AddMember() {
 
     )
 }
+
+export default withAuth(AddMember);

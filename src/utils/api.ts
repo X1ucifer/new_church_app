@@ -14,12 +14,18 @@ const api = axios.create({
 
 export const registerUser = async (data: any) => {
     try {
-        const response = await api.post('/register', data);
+        const response = await api.post('/register', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data.user;
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.message || 'Registration failed. Please try again.'
+                error.response?.data?.errors?.UserEmail?.[0] ||
+                error.response?.data?.errors?.UserProfile?.[0] ||
+                'Failed to request password reset. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -86,9 +92,9 @@ export const forgotPassword = async (UserEmail: string) => {
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError) {
-            throw new Error(
-                error.response?.data?.message || 'Failed to request password reset. Please try again.'
-            );
+            const errorMessage = error.response?.data?.errors.UserEmail?.[0] ||
+                'Failed to request password reset. Please try again.';
+            throw new Error(errorMessage);
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
         }
@@ -287,7 +293,7 @@ export const addEvent = async (
     leader: string,
     time: string,
     date: string,
-    churchID: string
+    EventChurchName: string
 ) => {
     try {
         const response = await api.post(
@@ -298,7 +304,7 @@ export const addEvent = async (
                 EventLeader: leader,
                 EventTime: time,
                 EventDate: date,
-                EventChurchID: churchID,
+                EventChurchName,
             },
             {
                 headers: {
@@ -339,7 +345,7 @@ export const deleteEvent = async (token: string, id: number) => {
     }
 };
 
-export const filterMembers = async (token: string, filter_type: string, id?:any) => {
+export const filterMembers = async (token: string, filter_type: string, id?: any) => {
     try {
         const url = id ? `/user/filterByType/${id}` : `/user/filterByType`;
         const response = await api.get(url, {
@@ -432,9 +438,10 @@ export const editMember = async (
     }
 ) => {
     try {
-        const response = await api.patch(`/user/updateMemberProfile/${id}`, data, {
+        const response = await api.post(`/user/updateMemberProfile/${id}`, data, {
             headers: {
                 Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
             },
         });
         return response.data.message;
@@ -508,9 +515,9 @@ export const getDashboard = async (token: string) => {
         });
         console.log(response.data.data)
         return {
-           data: response.data.data,
-           totalValues: response.data.totalValues,
-           averageAttendance: response.data.averageAttendance
+            data: response.data.data,
+            totalValues: response.data.totalValues,
+            averageAttendance: response.data.averageAttendance
         };
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -523,10 +530,10 @@ export const getDashboard = async (token: string) => {
     }
 };
 
-export const updateAttendance = async (token: string, eventId: number, users: any[]) => {
+export const updateAttendance = async (token: string, eventId: number, users: any) => {
     try {
         const response = await api.post(`/event/updateAttendance/${eventId}`, {
-            users,
+            ...users,
         }, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -553,7 +560,7 @@ export const updateEvent = async (token: string, { id, eventData }: { id: number
             EventLeader: eventData.leader,
             EventTime: eventData.time,
             EventDate: eventData.date,
-            EventChurchID: eventData.churchID,
+            EventChurchName: eventData.EventChurchName,
         }, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -572,7 +579,7 @@ export const updateEvent = async (token: string, { id, eventData }: { id: number
     }
 };
 
-export const getAttendance = async (token: string, id:number) => {
+export const getAttendance = async (token: string, id: number) => {
     try {
         const response = await api.get(`/event/getAttendance/${id}`, {
             headers: {
@@ -592,7 +599,7 @@ export const getAttendance = async (token: string, id:number) => {
     }
 };
 
-export const addFriend = async (token: string, data:any) => {
+export const addFriend = async (token: string, data: any) => {
     try {
         const response = await api.post('/user/newFriends', {
             ...data
@@ -606,7 +613,8 @@ export const addFriend = async (token: string, data:any) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.message || 'Failed to add friend. Please try again.'
+                error.response?.data?.errors?.UserEmail?.[0] ||
+                'Failed to add friend. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -616,27 +624,27 @@ export const addFriend = async (token: string, data:any) => {
 
 export const membersImport = async (token?: string, file?: File) => {
     try {
-      const formData = new FormData();
-      formData.append('excel_file', file as Blob); 
-  
-      const response = await api.post('/excel_import', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data', 
-        },
-      });
-  
-      return response.data;
+        const formData = new FormData();
+        formData.append('excel_file', file as Blob);
+
+        const response = await api.post('/excel_import', formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
     } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(
-          error.response?.data?.message || 'Failed to upload members data. Please try again.'
-        );
-      } else {
-        throw new Error('An unexpected error occurred. Please try again.');
-      }
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to upload members data. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
     }
-  };
+};
 
 
 

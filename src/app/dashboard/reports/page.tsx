@@ -6,12 +6,13 @@ import { DesktopHeader } from '../../../components/partials/desktopHeader'
 import { MobileHeader } from '../../../components/partials/mobileHeader'
 import axios from 'axios'
 import { Link } from 'react-router-dom';
+import withAuth from '../../../app/authCheck';
 
 
 const baseUrl = 'https://tjc.wizappsystem.com/church/public/api'
 
 
-export default function ChurchReport() {
+function ChurchReport() {
   const [activeTab, setActiveTab] = useState('Report')
   const [reportItems, setReportItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -202,7 +203,7 @@ Completed
   if (error) return <p>{error}</p>
 
   return (
-    <div className="min-h-screen bg-white flex flex-col text-black">
+    <div className="min-h-screen bg-white flex flex-col text-black pt-4 pb-16">
       <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
       {loading && (
         <div className="flex items-center justify-center min-h-screen bg-white">
@@ -312,7 +313,7 @@ Completed
               <h2 className="text-2xl font-bold mb-4">Users for {selectedReport}</h2>
 
               <div className="flex flex-col h-[81vh] justify-between md:h-unset md:justify-normal">
-                <div className="bg-white rounded-lg md:shadow overflow-hidden">
+                <div className="bg-white rounded-lg md:shadow overflow-hidden max-h-96 overflow-y-auto">
                   {userList.length > 0 ? (
                     <>
                       {/* Table Headings */}
@@ -401,7 +402,7 @@ Completed
           <>
             <h2 className="text-2xl font-bold mb-4">Report</h2>
             <div className="bg-white rounded-lg md:shadow overflow-hidden">
-              <ul className='h-[100vh]'>
+              <ul className=''>
                 {reportItems.map((item: any, index) => (
                   <li key={index}>
                     <a
@@ -435,3 +436,5 @@ Completed
   )
 
 }
+
+export default withAuth(ChurchReport);

@@ -8,6 +8,7 @@ import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 function UserProfile() {
     const [userType, setUserType] = useState('');
+    const [currentUserId, setCurrentUserId] = useState('');
     const [activeTab, setActiveTab] = useState('Account');
     const navigate = useNavigate();
     const { id } = useParams(); // Access the route params
@@ -26,8 +27,10 @@ function UserProfile() {
         const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
         const parsedData = userData ? JSON.parse(userData) : null;
         const userType = parsedData?.user.UserType;
+        setCurrentUserId(parsedData?.user.id)
         setUserType(userType);
     }, []);
+
 
     const handleDelete = () => {
         toast(
@@ -39,7 +42,7 @@ function UserProfile() {
                             if (userId) {
                                 deleteMember({ id: Number(userId), token });
                                 toast.success('Account deleted successfully.');
-                                navigate('/dashboard'); // Redirect after deletion
+                                navigate('/dashboard/account'); // Redirect after deletion
                             }
                             toast.dismiss(); // Close the toast
                         }}
@@ -89,21 +92,34 @@ function UserProfile() {
                     <div className="p-4">
                         {/* Profile Picture and Name */}
                         <div className="flex justify-start items-center mb-6">
-                            <img src="/profile.png" width={100} height={100} alt="Logo" className="w-24 h-24 rounded-full object-cover mb-2" />
+                            {/* <img src={user?.UserProfile} width={100} height={100} alt="Logo" className="w-24 h-24 rounded-full object-cover mb-2" /> */}
+                            {user?.UserProfile ? (
+                                <img
+                                    src={user.UserProfile}
+                                    width={100}
+                                    height={100}
+                                    alt="Profile"
+                                    className="w-24 h-24 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 flex items-center justify-center bg-gray-500 rounded-full">
+                                    <span className="text-4xl font-bold text-white">{user?.UserName?.charAt(0).toUpperCase()}</span>
+                                </div>
+                            )}
                             <h1 className="ml-[20px] text-2xl font-bold">
                                 {user?.UserName} <br />
                                 <span
                                     className={`px-2 py-1 rounded-full text-xs text-white ${user?.UserStatus === "Active"
-                                            ? "bg-green-500"
-                                            : user?.UserStatus === "Inactive"
-                                                ? "bg-gray-500"
-                                                : user?.UserStatus === "Lost"
-                                                    ? "bg-red-500"
-                                                    : user?.UserStatus === "NeedVisiting"
-                                                        ? "bg-blue-500"
-                                                        : user?.UserStatus === "NeedAttention"
-                                                            ? "bg-yellow-500"
-                                                            : "bg-green-500" 
+                                        ? "bg-green-500"
+                                        : user?.UserStatus === "Inactive"
+                                            ? "bg-gray-500"
+                                            : user?.UserStatus === "Lost"
+                                                ? "bg-red-500"
+                                                : user?.UserStatus === "NeedVisiting"
+                                                    ? "bg-blue-500"
+                                                    : user?.UserStatus === "NeedAttention"
+                                                        ? "bg-yellow-500"
+                                                        : "bg-green-500"
                                         }`}
                                 >
                                     {user?.UserStatus || "Active"}
@@ -130,23 +146,23 @@ function UserProfile() {
                         {/* Address */}
                         <div className="mb-6">
                             <p className="text-gray-500 text-sm">Address</p>
-                            <p className="font-semibold">{user?.UserAddress}</p>
+                            {user?.UserAddress.split(',').map((line: any, index:number) => (
+                                <p key={index} className="font-semibold">{line.trim()}</p>
+                            ))}
                         </div>
+
 
                         {/* Buttons */}
                         <div className="flex sm:flex-row gap-4 mb-4 mt-4">
-                            {userType == "Admin" &&
-                                (
-                                    <>
-                                        <button
-                                            onClick={handleDelete}
-                                            className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
-                                        >
-                                            Delete Account
-                                        </button>
-                                    </>
-                                )
-                            }
+                            {userType === "Admin" && user?.id !== currentUserId && ( // Check if user is Admin and not viewing their own account
+                                <button
+                                    onClick={handleDelete}
+                                    className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition-colors duration-300"
+                                >
+                                    Delete Account
+                                </button>
+                            )}
+
 
                             <button
                                 onClick={handleEdit}

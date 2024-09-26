@@ -25,7 +25,7 @@ export default function ForgotPassword() {
                 navigate('/forgot-password/otp');
             },
             onError: (error: Error) => {
-                setError('Failed to request password reset. Please try again.');
+                setError(error.message);
             }
         });
     };
@@ -53,7 +53,7 @@ export default function ForgotPassword() {
                     </h2>
 
                     <p className="text-gray-600 mb-8 md:text-gray-600 md:text-center md:mb-6">
-                        Don't worry! Please enter the phone / email address associated with your account.
+                        Don't worry! Please enter the email address associated with your account.
                     </p>
 
                     {success && (
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Email / Phone
+                                Email
                             </label>
                             <input
                                 type="text"
