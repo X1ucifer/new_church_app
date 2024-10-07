@@ -9,16 +9,25 @@ import withAuth from '../../../app/authCheck';
 import { membersImport } from '../../../utils/api';
 import Swal from 'sweetalert2';
 
-const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
-const parsedData = userData ? JSON.parse(userData) : null;
-const userId = parsedData?.user.id;
+// const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
+// const parsedData = userData ? JSON.parse(userData) : null;
+// const userId = parsedData?.user.id;
 
 
 function AccountSettings() {
     const [activeTab, setActiveTab] = useState('Account');
     const [userType, setUserType] = useState('');
+    const [userId, setUserId] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const token = localStorage.getItem('token') || '';
+
+    useEffect(() => {
+        const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
+        const parsedData = userData ? JSON.parse(userData) : null;
+        const userId = parsedData?.user.id;
+        setUserId(userId)
+
+    }, []);
 
     const navigate = useNavigate();
 
@@ -36,7 +45,7 @@ function AccountSettings() {
         { name: 'Profile', icon: User, route: `/dashboard/account/profile/${userId}` },
         // { name: 'Events', icon: Calendar, route: '/dashboard/events' },
         { name: 'Members Data', icon: Users, route: '/dashboard/account/members' },
-        { name: 'Out Station Members Data', icon: MapPin, route: '/dashboard/account/station-member' },
+        { name: 'Outstation Members Data', icon: MapPin, route: '/dashboard/account/station-member' },
         { name: 'Friends Data', icon: UserPlus, route: '/dashboard/account/friend' },
         { name: 'Change Password', icon: KeyRound, route: '/dashboard/account/change-password', },
         { name: 'Members Upload', icon: FileUp, route: '#', onClick: () => setIsModalOpen(true) },
@@ -51,9 +60,28 @@ function AccountSettings() {
     }, []);
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/'); // Use useNavigate from react-router-dom
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will be logged out from your account.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, log out!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                navigate('/'); // Redirect to the home page or login page
+                Swal.fire(
+                    'Logged Out!',
+                    'You have been logged out successfully.',
+                    'success'
+                );
+            }
+        });
     };
 
     const handleFileUpload = async () => {

@@ -5,7 +5,7 @@ import { useChurches } from '../../../../hooks/useRegister';
 import TimePicker from 'react-time-picker';
 import { useNavigate, useParams } from 'react-router-dom';
 import withAuth from '../../../../app/authCheck';
-
+import Swal from 'sweetalert2';
 
 interface EventDetails {
   EventName: string;
@@ -82,7 +82,16 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
       },
       {
         onSuccess: () => {
-          navigate('/dashboard/events');
+          window.location.href = '/dashboard/events';
+        },
+
+        onError: (error: any) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: `${error}`,
+            confirmButtonText: 'Okay',
+          });
         },
       }
     );
@@ -109,14 +118,11 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
             <input
               type="text"
               id="eventName"
-              maxLength={20}
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
               className="w-full p-2 border rounded-md"
               placeholder="Prayer Meeting"
-              onInput={(e: any) => {
-                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-              }}
+              required
             />
           </div>
           <div>
@@ -129,6 +135,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
                 value={eventType}
                 onChange={(e) => setEventType(e.target.value)}
                 className="w-full p-2 border rounded-md appearance-none"
+                required
               >
                 <option value="">Select event type</option>
                 <option value="Friday Sabbath">Friday Sabbath</option>
@@ -149,14 +156,11 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
             <input
               type="text"
               id="leader"
-              maxLength={20}
               value={leader}
               onChange={(e) => setLeader(e.target.value)}
               className="w-full p-2 border rounded-md"
               placeholder="Fedrick"
-              onInput={(e: any) => {
-                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-              }}
+              required
             />
           </div>
           <div className="flex space-x-4">
@@ -171,6 +175,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   className="w-full p-2 border rounded-md appearance-none"
+                  required
                 >
                   {generateTimeOptions().map((option: string) => (
                     <option key={option} value={option}>
@@ -192,6 +197,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full p-2 border rounded-md pl-8"
+                  required
                 />
                 <Calendar className="absolute left-2 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
@@ -230,13 +236,10 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
             <input
               type="text"
               id="EventChurchName"
-              maxLength={30}
               value={pastoralChurch}
                 onChange={(e) => setPastoralChurch(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              onInput={(e: any) => {
-                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-              }}
+              required
             />
           </div>
           <button

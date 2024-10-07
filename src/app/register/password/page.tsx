@@ -13,7 +13,7 @@ export default function RegisterPasswordSetup() {
 
   const { mutate: createPassword, isLoading, error } = useCreatePassword();
 
-  const sendOTP = useSendOTP();
+  const { mutate: sendOTP, error: otpError, isLoading: otpLoading } = useSendOTP(); // Use sendOTP mutation with error
 
   const UserEmail = typeof window !== 'undefined' ? localStorage.getItem('UserEmail') || '' : '';
 
@@ -21,33 +21,46 @@ export default function RegisterPasswordSetup() {
     e.preventDefault();
 
     if (newPassword === confirmPassword) {
-      createPassword({ UserEmail, newPassword, newPasswordConfirmation: confirmPassword }, {
-        onSuccess: () => {
-          Swal.fire({
-            icon: 'success',
-            title: 'User Created!',
-            text: 'Your password has been created successfully.',
-            confirmButtonText: 'OK',
-          }).then(() => {
-            sendOTP.mutate(
-              { UserEmail }, 
-              {
-                onSuccess: () => {
-                  router('/register/verify-otp');
-                },
-                onError: (error:any) => {
-                  Swal.fire({
-                    icon: 'error',
-                    title: 'OTP Sending Failed',
-                    text: error?.message || 'Failed to send OTP. Please try again.',
-                    confirmButtonText: 'OK',
-                  });
+      createPassword(
+        { UserEmail, newPassword, newPasswordConfirmation: confirmPassword },
+        {
+          onSuccess: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'User Created!',
+              text: 'Your password has been created successfully.',
+              confirmButtonText: 'OK',
+            }).then(() => {
+              sendOTP(
+                { UserEmail },
+                {
+                  onSuccess: () => {
+                    router('/register/verify-otp');
+                  },
+                  onError: (otpError: any) => {
+                    console.error("OTP Sending Error:", otpError);
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'OTP Sending Failed',
+                      text: `${otpError.message || 'Failed to send OTP. Please try again.'}`,
+                      confirmButtonText: 'OK',
+                    });
+                  },
                 }
-              }
-            );
-          });
-        },
-      });
+              );
+            });
+          },
+          onError: (createPasswordError: any) => {
+            console.error("Password Creation Error:", createPasswordError);
+            Swal.fire({
+              icon: 'error',
+              title: 'Password Creation Failed',
+              text: createPasswordError.message || 'Failed to create password. Please try again.',
+              confirmButtonText: 'OK',
+            });
+          },
+        }
+      );
     } else {
       Swal.fire({
         icon: 'warning',
@@ -56,6 +69,7 @@ export default function RegisterPasswordSetup() {
         confirmButtonText: 'OK',
       });
     }
+
   }
 
 
@@ -128,6 +142,7 @@ export default function RegisterPasswordSetup() {
             </div>
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               {isLoading ? 'Sending OTP...' : 'Submit'}

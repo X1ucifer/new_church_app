@@ -27,6 +27,9 @@ export default function CreatePasswordSetup() {
         if (newPassword === confirmPassword) {
             createPassword({ UserEmail, newPassword, newPasswordConfirmation: confirmPassword }, {
                 onSuccess: () => {
+                    localStorage.removeItem('formData');
+                    localStorage.removeItem('dataLoaded');
+                    localStorage.removeItem('profileImage');
                     localStorage.removeItem('UserEmail');
                     Swal.fire({
                         icon: 'success',

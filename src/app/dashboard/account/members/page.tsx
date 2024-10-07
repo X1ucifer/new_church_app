@@ -35,7 +35,7 @@ function MembersData() {
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            
+
             (entries) => {
                 console.log("dd", hasNextPage)
 
@@ -62,6 +62,13 @@ function MembersData() {
     const skeletonRows = Array(5).fill(null);
     const [activeTab, setActiveTab] = useState('Account');
 
+    const splitIntoChunks = (text: string, chunkSize: number) => {
+        const chunks = [];
+        for (let i = 0; i < text.length; i += chunkSize) {
+            chunks.push(text.slice(i, i + chunkSize));
+        }
+        return chunks;
+    };
 
     return (
         <>
@@ -74,7 +81,7 @@ function MembersData() {
                             <ArrowLeft className="h-5 w-5 mr-4" />
                             <p className='text-black font-medium'>Members Data</p>
                         </button>
-                        <Link to="/dashboard/member" >
+                        <Link to="/dashboard/account/add-member" >
                             <button className="text-blue-500 hover:text-blue-700 flex items-center">
                                 <Plus className="h-5 w-5 mr-1" />
                                 New
@@ -124,11 +131,27 @@ function MembersData() {
                                 ) : (
                                     (searchTerm ? searchedMembers : paginatedMembers)?.length ? (
                                         (searchTerm ? searchedMembers : paginatedMembers).map((member: any, index: number) => (
-                                            <tr key={member.id} className="border-t cursor-pointer" onClick={() => navigate(`/dashboard/account/profile/${member.id}`,)}
+                                            <tr
+                                                key={member.id}
+                                                className="border-t cursor-pointer"
+                                                onClick={() => navigate(`/dashboard/account/profile/${member.id}`)}
                                             >
-                                                <td className="px-4 py-2">{index + 1}</td>
-                                                <td className="px-4 py-2">{member.UserFamilyName}</td>
-                                                <td className="px-4 py-2">{member.UserName}</td>
+                                                <td className="px-4 py-2">
+                                                    {paginatedMembers.indexOf(member) + 1}
+                                                </td>
+                                                {/* UserFamilyName with line break after 15 characters */}
+                                                <td className="px-4 py-2">
+                                                    {splitIntoChunks(member.UserFamilyName, 15).map((chunk: string, i: number) => (
+                                                        <p key={i}>{chunk}</p>
+                                                    ))}
+                                                </td>
+
+                                                {/* UserName with line break after 15 characters */}
+                                                <td className="px-4 py-2">
+                                                    {splitIntoChunks(member.UserName, 15).map((chunk: string, i: number) => (
+                                                        <p key={i}>{chunk}</p>
+                                                    ))}
+                                                </td>
                                             </tr>
                                         ))
                                     ) : (

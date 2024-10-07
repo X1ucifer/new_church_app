@@ -23,9 +23,14 @@ export const registerUser = async (data: any) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.errors?.UserEmail?.[0] ||
                 error.response?.data?.errors?.UserProfile?.[0] ||
-                'Failed to request password reset. Please try again.'
+                error.response?.data?.errors?.UserEmail?.[0] || error.response?.data?.errors?.UserPhone?.[0] ||
+                error.response?.data?.errors?.UserChurchName?.[0] || error.response?.data?.errors?.UserName?.[0] ||
+                error.response?.data?.errors?.UserFamilyName?.[0] || error.response?.data?.errors?.UserGender?.[0] ||
+                error.response?.data?.errors?.UserMaritalStatus?.[0] || error.response?.data?.errors?.UserDOB?.[0] ||
+                error.response?.data?.errors?.UserAddress?.[0] || error.response?.data?.message || 'Failed to register try again.'
+
+
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -109,6 +114,7 @@ export const verifyOTP = async (UserEmail: string, UserOTP: string) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
+                error.response?.data?.errors?.UserOTP?.[0] ||
                 error.response?.data?.message || 'Failed to verify OTP. Please try again.'
             );
         } else {
@@ -124,6 +130,7 @@ export const resetPassword = async (UserEmail: string, newPassword: string, newP
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
+                error.response?.data?.errors?.new_password?.[0] ||
                 error.response?.data?.message || 'Failed to reset password. Please try again.'
             );
         } else {
@@ -198,6 +205,7 @@ export const changePassword = async (token: string, old_password: string, new_pa
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
+                error.response?.data?.errors?.new_password?.[0] ||
                 error.response?.data?.message || 'Failed to change password. Please try again.'
             );
         } else {
@@ -317,7 +325,8 @@ export const addEvent = async (
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.message || 'Failed to add the event. Please try again.'
+                error.response?.data?.errors?.EventName?.[0] || error.response?.data?.errors?.EventLeader?.[0] ||
+                error.response?.data?.errors?.EventChurchName?.[0] || error.response?.data?.message || 'Failed to add the event. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -345,7 +354,7 @@ export const deleteEvent = async (token: string, id: number) => {
     }
 };
 
-export const filterMembers = async (token: string, filter_type: string, id?: any) => {
+export const filterMembers = async (token: string, filter_type: string, page: number, id?: any) => {
     try {
         const url = id ? `/user/filterByType/${id}` : `/user/filterByType`;
         const response = await api.get(url, {
@@ -354,10 +363,11 @@ export const filterMembers = async (token: string, filter_type: string, id?: any
             },
             params: {
                 filter_type: filter_type,
+                page: page,  // Pass the page number
             },
         });
         console.log("API Response:", response.data);
-        return response.data.data;
+        return response.data;
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
@@ -368,6 +378,7 @@ export const filterMembers = async (token: string, filter_type: string, id?: any
         }
     }
 };
+
 
 export const getGroups = async (token: string) => {
     try {
@@ -396,6 +407,7 @@ export const createPassword = async (UserEmail: string, newPassword: string, new
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
+                error.response?.data?.errors?.UserPassword?.[0] ||
                 error.response?.data?.message || 'Failed to create password. Please try again.'
             );
         } else {
@@ -447,8 +459,18 @@ export const editMember = async (
         return response.data.message;
     } catch (error) {
         if (error instanceof AxiosError) {
+            if (error.response?.status === 500) {
+                throw new Error('Something went wrong.');
+            }
+
+            // Specific field error handling
             throw new Error(
-                error.response?.data?.message || 'Failed to update member. Please try again.'
+                error.response?.data?.errors?.UserEmail?.[0] || error.response?.data?.errors?.UserPhone?.[0] ||
+                error.response?.data?.errors?.UserChurchName?.[0] || error.response?.data?.errors?.UserName?.[0] ||
+                error.response?.data?.errors?.UserFamilyName?.[0] || error.response?.data?.errors?.UserGender?.[0] ||
+                error.response?.data?.errors?.UserMaritalStatus?.[0] || error.response?.data?.errors?.UserDOB?.[0] ||
+                error.response?.data?.errors?.UserProfile?.[0] ||
+                error.response?.data?.errors?.UserAddress?.[0] || error.response?.data?.message || 'Failed to update member. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -571,7 +593,8 @@ export const updateEvent = async (token: string, { id, eventData }: { id: number
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.message || 'Failed to update event. Please try again.'
+                error.response?.data?.errors?.EventName?.[0] || error.response?.data?.errors?.EventLeader?.[0] ||
+                error.response?.data?.errors?.EventChurchName?.[0] || error.response?.data?.message || 'Failed to update event. Please try again'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -613,8 +636,11 @@ export const addFriend = async (token: string, data: any) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.errors?.UserEmail?.[0] ||
-                'Failed to add friend. Please try again.'
+                error.response?.data?.errors?.UserEmail?.[0] || error.response?.data?.errors?.UserPhone?.[0] ||
+                error.response?.data?.errors?.UserChurchName?.[0] || error.response?.data?.errors?.UserName?.[0] ||
+                error.response?.data?.errors?.UserFamilyName?.[0] || error.response?.data?.errors?.UserGender?.[0] ||
+                error.response?.data?.errors?.UserMaritalStatus?.[0] || error.response?.data?.errors?.UserDOB?.[0] ||
+                error.response?.data?.errors?.UserAddress?.[0] || error.response?.data?.message || 'Failed to update member. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
@@ -647,5 +673,53 @@ export const membersImport = async (token?: string, file?: File) => {
 };
 
 
+export const reportUsers = async (token: string, report_type: string, page: number, search: string) => {
+    try {
+        const response = await api.get('/report', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            params: {
+                report_type,
+                page, // Include the page parameter
+                search, // Include the search parameter
+            },
+        });
+
+        return response; // Return the response
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to fetch users. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+
+export const reportExport = async (token?: string, report_type?: string) => {
+    try {
+        const response = await api.get('/reportExcelDownload', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            params: {
+                report_type,
+            },
+        });
+
+        return response; // Return only the data part of the response
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to export users. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
 
 export default api;

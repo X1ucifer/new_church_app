@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
 // import { useRouter } from 'next/navigation'
 import { useNavigate } from 'react-router-dom'
@@ -15,14 +15,10 @@ import withAuth from '../../../app/authCheck'
 const userSchema = z.object({
     UserName: z
         .string()
-        .min(1, 'Name is required')
-        .regex(/^[a-zA-Z\s]+$/, 'Name cannot contain special characters'),
-
+        .min(1, 'Name is required'),
     UserFamilyName: z
         .string()
-        .min(1, 'Family name is required')
-        .regex(/^[a-zA-Z\s]+$/, 'Family name cannot contain special characters'),
-
+        .min(1, 'Family Name is required'),
     UserGender: z.string().min(1, 'Gender is required'),
     UserMaritalStatus: z.string().min(1, 'Marital status is required'),
     UserDOB: z.string().refine((val) => !!val, {
@@ -31,15 +27,14 @@ const userSchema = z.object({
 
     UserPhone: z
         .string()
-        .length(10, 'Mobile number must be exactly 10 digits')
-        .regex(/^\d{10}$/, 'Mobile number must be digits only'),
+        .min(1, 'Mobile Number is required'),
 
-    UserEmail: z.string().email('Invalid email format'),
+    UserEmail: z.string().email('Email is required'),
     UserAddress: z.string().min(1, 'Address is required'),
-    UserStatus: z.string().min(1, 'User status is required'),
-    UserType: z.string().min(1, 'User type is required'),
-    UserGroupID: z.string().min(1, 'Group is required'),
-    UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
+    UserStatus: z.string().min(1, 'Status is required'),
+    UserType: z.string().min(1, 'User Type is required'),
+    UserGroupID: z.string().optional(),
+    UserChurchName: z.string().min(1, 'Pastoral Church Name is required'),
 });
 
 
@@ -74,6 +69,7 @@ function AddMember() {
 
     const handleImageChange = (e: any) => {
         const file: any = e.target.files?.[0];
+
         if (file) {
 
             const img = {
@@ -86,6 +82,9 @@ function AddMember() {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setProfileImagePreview(reader.result as string);
+
+                localStorage.setItem('profileImage', reader.result as string);
+
             };
             reader.readAsDataURL(file);
         }
@@ -95,9 +94,65 @@ function AddMember() {
     const parsedData = userData ? JSON.parse(userData) : null;
     const userType = parsedData?.user.UserType;
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, setValue, getValues, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(userSchema),
     });
+
+    useEffect(() => {
+        const savedFormData = localStorage.getItem('formData');
+        if (!savedFormData) {
+            localStorage.removeItem('profileImage');  // Remove profileImage if no formData
+        }
+    }, [])
+
+
+    useEffect(() => {
+        // Check if the form data has been loaded before
+        const dataLoadedFlag = localStorage.getItem('dataLoaded');
+
+        if (dataLoadedFlag === null) {
+            // Load saved form data from localStorage
+            const savedFormData = localStorage.getItem('formData');
+            if (savedFormData) {
+                const parsedData = JSON.parse(savedFormData);
+                setFormData(parsedData);
+
+                // Set default values in the form
+                setValue('UserName', parsedData.UserName || '');
+                setValue('UserFamilyName', parsedData.UserFamilyName || '');
+                setValue('UserDOB', parsedData.UserDOB || '');
+                setValue('UserPhone', parsedData.UserPhone || '');
+                setValue('UserEmail', parsedData.UserEmail || '');
+                setValue('UserAddress', parsedData.UserAddress || '');
+                setValue('UserAddress', parsedData.UserAddress || '');
+                setValue('UserGender', parsedData.UserGender || '');
+                setValue('UserMaritalStatus', parsedData.UserMaritalStatus || '');
+                setValue('UserType', parsedData.UserType || '');
+                setValue('UserStatus', parsedData.UserStatus || '');
+                setValue('UserGroupID', parsedData.UserGroupID || '');
+                setValue('UserChurchName', parsedData.UserChurchName || '');
+
+                localStorage.setItem('dataLoaded', 'true');
+
+            }
+
+
+            const savedImage = localStorage.getItem('profileImage');
+            if (savedImage) {
+                setProfileImagePreview(savedImage);
+            }
+
+
+
+        } else {
+            // Clear the form data from localStorage after the first refresh
+            localStorage.removeItem('formData');
+            localStorage.removeItem('dataLoaded');
+            localStorage.removeItem('profileImage');
+        }
+    }, [setValue]);
+
+
 
     const onSubmit: any = (data: any) => {
         let formData: any = new FormData();
@@ -118,6 +173,8 @@ function AddMember() {
             onSuccess: (data) => {
                 localStorage.setItem('UserEmail', data.UserEmail);
                 if (data.UserType === "Admin" || data.UserType === "Pastor" || data.UserType === "Exco") {
+                    localStorage.setItem('formData', JSON.stringify(data));
+
                     navigate('/dashboard/member/create-password');
                 } else {
                     // Reset form and show success alert
@@ -132,10 +189,10 @@ function AddMember() {
                     //     UserAddress: '',
                     //     UserType: '',
                     //     UserChurchName: '',
-                    //     UserGroupID: '',
+                    //     UserGroupID: '', 
                     // }
                     // );
-                    navigate('/dashboard');
+                    navigate(-1);
                     setProfileImage(null);
                     fileInputRef.current && (fileInputRef.current.value = '');
 
@@ -147,7 +204,20 @@ function AddMember() {
                     // });
                 }
             },
+            onError: (error) => {
+                // Handle the error scenario
+                console.error('Error registering user:', error);
+
+                // Optionally show an error alert/message to the user
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: `${error}`,
+                    confirmButtonText: 'OK',
+                });
+            },
         });
+
     };
 
 
@@ -211,12 +281,10 @@ function AddMember() {
                                 <input
                                     type="text"
                                     id="UserName"
-                                    maxLength={20}
+                                    defaultValue={formData.UserName || ''}
                                     {...register('UserName')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                    }}
+
                                 />
                                 {errors.UserName && typeof errors.UserName.message === 'string' && (
                                     <p className="text-red-500 text-sm">{errors?.UserName.message}</p>
@@ -228,12 +296,10 @@ function AddMember() {
                                 <input
                                     type="text"
                                     id="UserFamilyName"
-                                    maxLength={20}
+                                    defaultValue={formData.UserFamilyName || ''}
                                     {...register('UserFamilyName')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                    }}
+
                                 />
                                 {errors.UserFamilyName && typeof errors.UserFamilyName.message === 'string' && (
                                     <p className="text-red-500 text-sm">{errors?.UserFamilyName.message}</p>
@@ -280,18 +346,35 @@ function AddMember() {
                             </div>
 
                             <div>
-                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">D.O.B</label>
+                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                                 <input
                                     type="date"
                                     id="UserDOB"
-                                    {...register('UserDOB')}
+                                    defaultValue={formData.UserDOB || ''}
+                                    {...register('UserDOB', {
+                                        validate: (value) => {
+                                            const selectedDate = new Date(value);
+                                            const minDate = new Date('1940-01-01'); // Updated minimum date
+                                            const maxDate = new Date();
+
+                                            if (selectedDate < minDate) {
+                                                return 'Date of birth cannot be before 1940.';
+                                            }
+                                            if (selectedDate > maxDate) {
+                                                return 'Date of birth cannot be in the future.';
+                                            }
+                                            return true;
+                                        },
+                                    })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    max={new Date().toISOString().split('T')[0]}
+                                    max={new Date().toISOString().split('T')[0]} // Today's date as max
+                                    min="1940-01-01" // Minimum date set to 1940
                                 />
                                 {errors.UserDOB && typeof errors.UserDOB.message === 'string' && (
-                                    <p className="text-red-500 text-sm">{errors?.UserDOB.message}</p>
+                                    <p className="text-red-500 text-sm">{errors.UserDOB.message}</p>
                                 )}
                             </div>
+
 
                             <div>
                                 <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">
@@ -300,11 +383,12 @@ function AddMember() {
                                 <input
                                     type="tel"
                                     id="UserPhone"
+                                    defaultValue={formData.UserPhone || ''}
                                     {...register('UserPhone')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
-                                        if (value.length <= 10) { // Allow max 10 digits
+                                        const value = e.target.value; // Remove non-digit characters
+                                        if (value.length <= 500) { // Allow max 10 digits
                                             e.target.value = value;
                                         } else {
                                             e.target.value = value.slice(0, 10); // Trim to 10 digits
@@ -322,7 +406,21 @@ function AddMember() {
                                 <input
                                     type="email"
                                     id="UserEmail"
-                                    {...register('UserEmail')}
+                                    defaultValue={formData.UserEmail || ''}
+                                    {...register('UserEmail', {
+                                        required: 'Email is required.',
+                                        validate: value => {
+                                            if (/\s/.test(value)) {
+                                                return 'Email cannot contain spaces.';
+                                            }
+                                            return true; // Return true if validation passes
+                                        }
+                                    })}
+                                    onKeyPress={(e) => {
+                                        if (e.key === ' ') {
+                                            e.preventDefault(); // Prevent space character
+                                        }
+                                    }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 />
                                 {errors.UserEmail && typeof errors.UserEmail.message === 'string' && (
@@ -330,16 +428,17 @@ function AddMember() {
                                 )}
                             </div>
 
+
+
                             <div>
                                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                                 <textarea
                                     id="UserAddress"
+                                    defaultValue={formData.UserAddress || ''}
                                     {...register('UserAddress')}
                                     rows={3}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._\/-]/g, '');
-                                    }}
+
                                 ></textarea>
                                 {errors.UserAddress && typeof errors.UserAddress.message === 'string' && (
                                     <p className="text-red-500 text-sm">{errors?.UserAddress.message}</p>
@@ -348,7 +447,7 @@ function AddMember() {
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Type
+                                    User Type
                                 </label>
                                 <select
                                     id="UserType"
@@ -423,12 +522,8 @@ function AddMember() {
                                 <input
                                     type="text"
                                     id="UserChurchName"
-                                    maxLength={30}
                                     {...register('UserChurchName')}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                    }}
                                 />
                                 {errors.UserChurchName && typeof errors.UserChurchName.message === 'string' && (
                                     <p className="text-red-500 text-sm">{errors?.UserChurchName.message}</p>
@@ -437,9 +532,10 @@ function AddMember() {
 
                             <button
                                 type="submit"
+                                disabled={registerLoader}
                                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
-                                {isLoading ? 'Registering...' : 'Register'}
+                                {registerLoader ? 'Registering...' : 'Register'}
                             </button>
 
                             {/* {error && <p className="error">{error.message}</p>} */}

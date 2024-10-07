@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { updateRights, getRights } from '../../../../utils/api';
 import Swal from 'sweetalert2';
 import { DesktopHeader } from '../../../../components/partials/desktopHeader';
+import withAuth from '../../../../app/authCheck';
 
 interface AccessRight {
     id: number
@@ -22,7 +23,7 @@ const initialAccessRights: AccessRight[] = [
     { id: 4, name: 'Settings', localPastor: false, localExec: false },
 ]
 
-export default function UsageRights() {
+function UsageRights() {
     const [accessRights, setAccessRights] = useState<AccessRight[]>(initialAccessRights)
     const [loading, setLoading] = useState(false);
 
@@ -177,7 +178,8 @@ export default function UsageRights() {
                                     {accessRights.map((right) => (
                                         <tr key={right.id}>
                                             <td className="border p-2">{right.id}</td>
-                                            <td className="border p-2">{right.name}</td>
+                                            <td className="border p-2"> {right.name === 'Settings' ? 'Account' : right.name}
+                                            </td>
                                             <td className="border p-2 text-center">
                                                 <input
                                                     type="checkbox"
@@ -212,3 +214,5 @@ export default function UsageRights() {
         </>
     )
 }
+
+export default withAuth(UsageRights);

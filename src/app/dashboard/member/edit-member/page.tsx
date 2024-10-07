@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom' // Import useParams an
 import { useGroups, useRegister } from '../../../../hooks/useRegister'
 import Swal from 'sweetalert2';
 import { useEditMember, useMember } from '../../../../hooks/useMembersData'
+import withAuth from '../../../../app/authCheck';
 
 interface FormDataType {
     UserName: string;
@@ -20,8 +21,7 @@ interface FormDataType {
     UserGroupID: string;
 }
 
-
-export default function UpdateMember() {
+function UpdateMember() {
     const [formData, setFormData] = useState({
         UserName: '',
         UserFamilyName: '',
@@ -39,6 +39,7 @@ export default function UpdateMember() {
     const [userType, setUserType] = useState('');
     const [profileImage, setProfileImage] = useState<File | null>(null);
     const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);  // For preview
+    const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({});
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
@@ -46,25 +47,59 @@ export default function UpdateMember() {
 
     const { mutate: editMember, isLoading: Loading, error: Error } = useEditMember();
 
+
     const handleChange = (e: any) => {
         const { name, value } = e.target;
 
-        // Validation for each specific field
-        if (name === 'UserPhone') {
-            // Allow only 10 digits, no characters
-            const phoneNumber = value.replace(/\D/g, ''); // Remove non-digit characters
-            if (phoneNumber.length <= 10) {
-                setFormData(prevData => ({ ...prevData, [name]: phoneNumber }));
+        if (name === 'UserEmail') {
+            // Simple regex for email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(value)) {
+                setErrors(prevErrors => ({ ...prevErrors, UserEmail: 'Invalid email format.' }));
+            } else {
+                setErrors(prevErrors => ({ ...prevErrors, UserEmail: undefined })); // Clear error if valid
             }
-        } else if (name === 'UserName' || name === 'UserFamilyName') {
-            // Allow only letters (no special characters)
-            const nameWithoutSpecialChars = value.replace(/[^a-zA-Z\s]/g, ''); // Only allow alphabets and spaces
-            setFormData(prevData => ({ ...prevData, [name]: nameWithoutSpecialChars }));
-        } else if (name === 'UserAddress') {
-            // Allow letters, numbers, spaces, and , . - only
-            const address = value.replace(/[^a-zA-Z0-9\s,.-]/g, ''); // Allow specific characters
-            setFormData(prevData => ({ ...prevData, [name]: address }));
-        } else {
+            // Since the input is disabled, we don't update the formData here
+            return;
+        }
+
+        // Validation for UserPhone
+        if (name === 'UserPhone') {
+            const phoneNumber = value; // Remove non-digit characters
+            if (phoneNumber.length <= 500) {
+                setFormData(prevData => ({ ...prevData, [name]: phoneNumber }));
+                setErrors(prevErrors => ({ ...prevErrors, UserPhone: undefined }));
+            } else {
+                setErrors(prevErrors => ({ ...prevErrors, UserPhone: 'Phone number cannot exceed 10 digits.' }));
+            }
+        }
+
+        // Validation for UserDOB
+        else if (name === 'UserDOB') {
+            const selectedDate = new Date(value);
+            const minDate = new Date('1940-01-01');
+            const maxDate = new Date();
+
+            if (selectedDate < minDate) {
+                setFormData(prevData => ({ ...prevData, [name]: '' })); // Clear value
+                setErrors(prevErrors => ({ ...prevErrors, UserDOB: 'Date of birth cannot be before 1900.' }));
+            } else if (selectedDate > maxDate) {
+                setFormData(prevData => ({ ...prevData, [name]: '' })); // Clear value
+                setErrors(prevErrors => ({ ...prevErrors, UserDOB: 'Date of birth cannot be in the future.' }));
+            } else {
+                setFormData(prevData => ({ ...prevData, [name]: value }));
+                setErrors(prevErrors => ({ ...prevErrors, UserDOB: undefined }));
+            }
+        }
+
+        // No restrictions for UserName, UserFamilyName, and UserAddress
+        else if (name === 'UserName' || name === 'UserFamilyName' || name === 'UserAddress') {
+            setFormData(prevData => ({ ...prevData, [name]: value }));
+        }
+
+        // Handle other fields
+        else {
             setFormData(prevData => ({ ...prevData, [name]: value }));
         }
     };
@@ -109,20 +144,22 @@ export default function UpdateMember() {
             dataToSend.append(key, formData[key as keyof FormDataType]); // Use keyof to assert type
         });
 
-        try {
-            await editMember({ token, id, data: dataToSend }, {
+        editMember(
+            { token, id, data: dataToSend },
+            {
                 onSuccess() {
-                    navigate(`/dashboard/account/profile/${id}`);
+                    navigate(`/dashboard/account/profile/${id}`, { replace: true });
                 },
-            });
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Update Failed',
-                text: 'Failed to update member details. Please try again.',
-                confirmButtonText: 'OK',
-            });
-        }
+                onError(error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: `${error}`,
+                        confirmButtonText: 'OK',
+                    });
+                },
+            }
+        );
     };
 
 
@@ -137,7 +174,7 @@ export default function UpdateMember() {
                 UserPhone: member.UserPhone || '',
                 UserEmail: member.UserEmail || '',
                 UserAddress: member.UserAddress || '',
-                UserType: member.UserType || '',
+                UserType: member?.UserType || '',
                 UserStatus: member.UserStatus || '',
                 UserChurchName: member.UserChurchName || '',
                 UserGroupID: member.UserGroupID || '',
@@ -150,6 +187,14 @@ export default function UpdateMember() {
     }, [member]);
 
     console.log("d", profileImagePreview)
+
+    useEffect(() => {
+        const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
+        const parsedData = userData ? JSON.parse(userData) : null;
+        const userType = parsedData?.user.UserType;
+        setUserType(userType);
+    }, []);
+
 
 
     return (
@@ -200,7 +245,6 @@ export default function UpdateMember() {
                                 type="text"
                                 id="UserName"
                                 name="UserName"
-                                maxLength={20}
                                 value={formData.UserName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -214,7 +258,6 @@ export default function UpdateMember() {
                                 type="text"
                                 id="UserFamilyName"
                                 name="UserFamilyName"
-                                maxLength={20}
                                 value={formData.UserFamilyName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -259,7 +302,7 @@ export default function UpdateMember() {
                         </div>
 
                         <div>
-                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">D.O.B</label>
+                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                             <input
                                 type="date"
                                 id="UserDOB"
@@ -271,6 +314,8 @@ export default function UpdateMember() {
                                 max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
+
+
 
                         <div>
                             <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
@@ -292,6 +337,7 @@ export default function UpdateMember() {
                                 id="UserEmail"
                                 name="UserEmail"
                                 value={formData.UserEmail}
+                                disabled
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 required
@@ -311,28 +357,47 @@ export default function UpdateMember() {
                             ></textarea>
                         </div>
 
-                        <div>
-                            <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                Type
-                            </label>
-                            <select
-                                id="UserType"
-                                name="UserType"
-                                value={formData.UserType}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            >
-                                <option value="">Select</option>
-                                <option value="Admin">Admin</option>
-                                <option value="Pastor">Pastor</option>
-                                <option value="Exco">Exco</option>
-                                <option value="Member">Member</option>
-                                <option value="Friend">Friend</option>
-                            </select>
-                        </div>
+                        {member?.UserType !== "Admin" && (
+                            <>
+                                <div>
+                                    <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        User Type
+                                    </label>
+                                    <select
+                                        id="UserType"
+                                        disabled={member?.UserType === "Pastor" || member?.UserType === "Exco"}
+                                        name="UserType"
+                                        value={formData.UserType}
+                                        onChange={handleChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select</option>
+                                        {/* If the current member's UserType is set, show it as the selected value */}
+                                        {(member?.UserType === "Pastor" || member?.UserType === "Exco") && (
+                                            <option value={member?.UserType} disabled>
+                                                {member?.UserType}
+                                            </option>
+                                        )}
 
-                        {member.UserType !== "Admin" && (
+                                        {/* Show additional options for non-Pastor and non-Exco users */}
+                                        {/* {userType !== "Pastor" && userType !== "Exco" && (
+                                            <>
+                                                <option value="Pastor">Pastor</option>
+                                                <option value="Exco">Exco</option>
+                                            </>
+                                        )} */}
+                                        <option value="Outstation Member">Outstation Member</option>
+                                        <option value="Member">Member</option>
+                                        <option value="Friend">Friend</option>
+                                    </select>
+
+                                </div>
+                            </>
+                        )}
+
+
+                        {member?.UserType !== "Admin" && (
                             <>
                                 <div>
                                     <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -367,7 +432,6 @@ export default function UpdateMember() {
                                 value={formData.UserGroupID}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             >
                                 <option value="">Select Group</option>
                                 {isLoading ? (
@@ -392,9 +456,9 @@ export default function UpdateMember() {
                                 type="text"
                                 id="UserChurchName"
                                 name="UserChurchName"
-                                maxLength={30}
                                 value={formData.UserChurchName}
                                 onChange={handleChange}
+
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 required
                             />
@@ -415,3 +479,5 @@ export default function UpdateMember() {
         </div>
     )
 }
+
+export default withAuth(UpdateMember);

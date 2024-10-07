@@ -15,10 +15,10 @@ import Swal from 'sweetalert2';
 const loginSchema = z.object({
     email: z
         .string()
-        .min(1, "Email or phone number is required")
+        .min(1, "Email is required")
         .refine(
             (value) => value.includes('@') || !isNaN(Number(value)),
-            "Enter a valid email or phone number"
+            "Enter a valid email"
         ),
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
@@ -135,7 +135,7 @@ export default function ChurchLogin() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                Email 
+                                Email
                             </label>
                             <input
                                 type="text"
@@ -185,9 +185,11 @@ export default function ChurchLogin() {
                         <button
                             type="submit"
                             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            disabled={isLoading} // Disable the button when loading
                         >
                             {isLoading ? 'Logging in...' : 'Login'}
                         </button>
+
                     </form>
                     <p className="mt-4 text-center text-sm text-gray-600">
                         Don't have an account?{' '}

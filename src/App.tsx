@@ -24,6 +24,9 @@ import Register from './app/register/page';
 import RegisterPasswordSetup from './app/register/password/page';
 import RegisterOTPVerification from './app/register/otp/page';
 import AddFriend from './app/dashboard/events/attendance/add-friends/page';
+import ReportUsers from './app/dashboard/reports/report-users/page';
+import Families from './app/dashboard/reports/families/page';
+import MemberAdd from './app/dashboard/account/members/add-member/page';
 
 const App: React.FC = () => {
 const AuthenticatedDashboard = withAuth(Dashboardpage);
@@ -44,6 +47,9 @@ const AuthenticatedDashboard = withAuth(Dashboardpage);
         <Route path="/dashboard/add-friend" element={<AddFriend />} />
         <Route path="/dashboard/account" element={<AccountSettings />} />
         <Route path="/dashboard/member/create-password" element={<CreatePasswordSetup />} />
+        <Route path="/dashboard/report-users/:slug" element={<ReportUsers />} />
+        <Route path="/dashboard/reports/families" element={<Families />} />
+        <Route path="/dashboard/account/add-member" element={<MemberAdd />} />
 
         {/* Shamira */}
         <Route path="/dashboard/account/station-member" element={<StationMembersData />} />

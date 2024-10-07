@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, MoreVertical } from 'lucide-react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import withAuth from '../../../../app/authCheck'; // Replace with your actual auth HOC path
 import { useMember, useDeleteMember } from '../../../../hooks/useMembersData'; // Adjust the hook import paths as needed
 import { toast } from 'react-toastify';
 import { DesktopHeader } from '../../../../components/partials/desktopHeader';
+import Swal from 'sweetalert2';
 
 function UserProfile() {
+    const location = useLocation();
+    const initialTab = location.state?.activeTab || 'Account';
+
     const [userType, setUserType] = useState('');
     const [currentUserId, setCurrentUserId] = useState('');
-    const [activeTab, setActiveTab] = useState('Account');
+    const [activeTab, setActiveTab] = useState(initialTab);
     const navigate = useNavigate();
     const { id } = useParams(); // Access the route params
     const token = localStorage.getItem('token') || '';
@@ -33,42 +37,27 @@ function UserProfile() {
 
 
     const handleDelete = () => {
-        toast(
-            <div>
-                <p>Are you sure you want to delete this account?</p>
-                <div className="flex justify-end gap-2 mt-2">
-                    <button
-                        onClick={() => {
-                            if (userId) {
-                                deleteMember({ id: Number(userId), token });
-                                toast.success('Account deleted successfully.');
-                                navigate('/dashboard/account'); // Redirect after deletion
-                            }
-                            toast.dismiss(); // Close the toast
-                        }}
-                        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                    >
-                        Yes
-                    </button>
-                    <button
-                        onClick={() => toast.dismiss()} // Close the toast
-                        className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400"
-                    >
-                        No
-                    </button>
-                </div>
-            </div>,
-            {
-                position: 'top-center',
-                autoClose: false,
-                closeOnClick: false,
-                draggable: false,
-                style: {
-                    backgroundColor: '#fff',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                },
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to delete this account? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (userId) {
+                    deleteMember({ id: Number(userId), token });
+                    Swal.fire('Deleted!', 'The account has been deleted.', 'success').then(() => {
+                        navigate(-1); // Redirect after deletion
+                    });
+                }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                Swal.fire('Cancelled', 'The account is safe!', 'info');
             }
-        );
+        });
     };
 
     return (
@@ -101,13 +90,23 @@ function UserProfile() {
                                     alt="Profile"
                                     className="w-24 h-24 rounded-full object-cover"
                                 />
+
                             ) : (
-                                <div className="w-24 h-24 flex items-center justify-center bg-gray-500 rounded-full">
-                                    <span className="text-4xl font-bold text-white">{user?.UserName?.charAt(0).toUpperCase()}</span>
-                                </div>
+                                <img
+                                    src="/user_avatar.jpg"
+                                    width={100}
+                                    height={100}
+                                    alt="Profile"
+                                    className="w-24 h-24 rounded-full object-cover"
+                                />
+                                // <div className="w-24 h-24 flex items-center justify-center bg-gray-500 rounded-full">
+                                //     <span className="text-4xl font-bold text-white">{user?.UserName?.charAt(0).toUpperCase()}</span>
+                                // </div>
                             )}
                             <h1 className="ml-[20px] text-2xl font-bold">
-                                {user?.UserName} <br />
+                                <span className="block max-w-[400px] break-words">
+                                    {user?.UserName}
+                                </span>
                                 <span
                                     className={`px-2 py-1 rounded-full text-xs text-white ${user?.UserStatus === "Active"
                                         ? "bg-green-500"
@@ -129,13 +128,62 @@ function UserProfile() {
                         </div>
 
                         {/* User Information */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        {/* <div className="grid grid-cols-2 gap-4 mb-6">
                             {user && Object.entries(user).map(([key, value]) => {
+                                // Check for keys to exclude from rendering
                                 if (key !== 'UserName' && key !== 'UserChurchID' && key !== 'id' && key !== 'UserProfile' && key !== 'UserEmailVerified' && key !== 'UserGroupID' && key !== 'UserType' && key !== 'UserAddress') {
+                                    // Set default value for UserStatus if value is null or undefined
+                                    const displayValue = key === 'UserStatus' && (value === null || value === undefined) ? 'Active' : value;
+
                                     return (
                                         <div key={key}>
                                             <p className="text-gray-500 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                            <p className="font-semibold">{value as any}</p>
+                                            {key === 'UserPhone' && typeof displayValue === 'string' && displayValue.length > 15 ? (
+                                                <>
+                                                    <p className="font-semibold">{displayValue.slice(0, 15)}</p>
+                                                    <p className="font-semibold">{displayValue.slice(11)}</p>
+                                                </>
+                                            ) : (
+                                                <p className="font-semibold">{displayValue as any}</p>
+                                            )}
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })}
+                        </div> */}
+
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            {user && Object.entries(user).map(([key, value]) => {
+                                // Check for keys to exclude from rendering
+                                if (key !== 'UserName' && key !== 'UserChurchID' && key !== 'id' && key !== 'UserProfile' && key !== 'UserEmailVerified' && key !== 'UserGroupID' && key !== 'UserType' && key !== 'UserAddress') {
+
+                                    // Set default value for UserStatus if value is null or undefined
+                                    const displayValue = key === 'UserStatus' && (value === null || value === undefined) ? 'Active' : value;
+
+                                    // Function to split the text into chunks of 15 characters
+                                    const splitIntoChunks = (text: string, chunkSize: number) => {
+                                        const chunks = [];
+                                        for (let i = 0; i < text.length; i += chunkSize) {
+                                            chunks.push(text.slice(i, i + chunkSize));
+                                        }
+                                        return chunks;
+                                    };
+
+                                    return (
+                                        <div key={key}>
+                                            <p className="text-gray-500 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+
+                                            {/* Handling UserPhone and UserFamilyName if longer than 15 characters */}
+                                            {(key === 'UserPhone' || key === 'UserFamilyName') && typeof displayValue === 'string' && displayValue.length > 15 ? (
+                                                <>
+                                                    {splitIntoChunks(displayValue, 15).map((chunk, index) => (
+                                                        <p key={index} className="font-semibold">{chunk}</p>
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <p className="font-semibold">{displayValue as any}</p>
+                                            )}
                                         </div>
                                     );
                                 }
@@ -143,14 +191,17 @@ function UserProfile() {
                             })}
                         </div>
 
+
+
                         {/* Address */}
                         <div className="mb-6">
                             <p className="text-gray-500 text-sm">Address</p>
-                            {user?.UserAddress.split(',').map((line: any, index:number) => (
-                                <p key={index} className="font-semibold">{line.trim()}</p>
-                            ))}
+                            {user?.UserAddress
+                                .split('\r') // Split only by carriage return
+                                .map((line: string, index: number) => (
+                                    <p key={index} className="font-semibold">{line.trim()}</p>
+                                ))}
                         </div>
-
 
                         {/* Buttons */}
                         <div className="flex sm:flex-row gap-4 mb-4 mt-4">

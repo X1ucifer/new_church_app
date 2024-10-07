@@ -17,6 +17,7 @@
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.5.4",
+    "lottie-react": "^2.4.0",
     "lucide-react": "^0.439.0",
     "postcss-cli": "^11.0.0",
     "rc-time-picker": "^3.7.3",

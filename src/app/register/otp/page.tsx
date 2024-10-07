@@ -49,22 +49,34 @@ export default function RegisterOTPVerification() {
                 router('/dashboard');
             },
             onError: (error: Error) => {
-                setError('Failed to verify OTP. Please try again.');
+                setError(`${error}`);
             }
         });
     }
+
+    useEffect(() => {
+        localStorage.removeItem('formData');
+        localStorage.removeItem('profileImage');
+
+    }, [])
 
     return (
         <div className="md:min-h-screen bg-white flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-lg md:shadow-lg overflow-hidden">
                 <div className="p-6 sm:p-8">
-                    <button onClick={() => router(-1)} className="mb-6 text-gray-600 hover:text-gray-800">
+                    <button onClick={() => router(-3)} className="mb-6 text-gray-600 hover:text-gray-800">
                         <ArrowLeft className="h-6 w-6 text-blue-400" />
                     </button>
 
                     <div className="flex justify-center mb-6">
                         <img src="/otp.png" width={400} height={400} alt="Logo" className="mr-2 mb-[10px] md:mb-0" />
                     </div>
+
+                    {error && (
+                        <div className="bg-red-100 text-red-700 p-4 mb-6 rounded-md">
+                            {error}
+                        </div>
+                    )}
 
                     <h2 className="text-2xl font-bold mb-[5px] md:text-2xl md:font-bold md:text-center md:mb-2">Enter OTP</h2>
                     <p className="text-center text-gray-600 mb-[27px] md:mb-6">
@@ -78,6 +90,7 @@ export default function RegisterOTPVerification() {
                     <div className="flex justify-between mb-6">
                         {otp.map((digit, index) => (
                             <input
+                                required
                                 key={index}
                                 type="text"
                                 maxLength={1}
@@ -92,6 +105,7 @@ export default function RegisterOTPVerification() {
 
                     <button
                         onClick={handleVerify}
+                        disabled={isLoading}
                         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                         {isLoading ? 'Verifying OTP...' : 'Verify OTP'}

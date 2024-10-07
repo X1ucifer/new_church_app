@@ -8,13 +8,27 @@ import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 function StationMembersData() {
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
 
     const navigate = useNavigate(); // Use useNavigate from react-router-dom
     const token = localStorage.getItem('token') || '';
 
-    const { data: members, isLoading: filterLoading, isError } = useFilterMembers(token, "Outstation Member");
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Outstation Member", currentPage);
 
+    const members = membersData?.data || [];
+    const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
+
+    const handleNextPage = () => {
+        if (currentPage < pagination.last_page) {
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    };
     const skeletonRows = Array(5).fill(null);
 
     const filteredMembers = members?.filter((member: any) =>
@@ -24,6 +38,13 @@ function StationMembersData() {
 
     const [activeTab, setActiveTab] = useState('Account');
 
+    const splitIntoChunks = (text: string, chunkSize: number) => {
+        const chunks = [];
+        for (let i = 0; i < text.length; i += chunkSize) {
+            chunks.push(text.slice(i, i + chunkSize));
+        }
+        return chunks;
+    };
 
     return (
         <>
@@ -37,7 +58,7 @@ function StationMembersData() {
                             <ArrowLeft className="h-5 w-5 mr-4" />
                             <p className='text-black font-medium'>Outstation Member</p>
                         </button>
-                        <Link to="/dashboard/member" >
+                        <Link to="/dashboard/add-friend" state={"Outstation Member"}>
                             <button className="text-blue-500 hover:text-blue-700 flex items-center">
                                 <Plus className="h-5 w-5 mr-1" />
                                 New
@@ -92,9 +113,18 @@ function StationMembersData() {
                                                 className="border-t"
                                                 onClick={() => navigate(`/dashboard/account/profile/${member.id}`)}
                                             >
-                                                <td className="px-4 py-2">{index + 1}</td>
-                                                <td className="px-4 py-2">{member.UserFamilyName}</td>
-                                                <td className="px-4 py-2">{member.UserName}</td>
+                                                <td className="px-4 py-2">{(currentPage - 1) * pagination.per_page + index + 1}</td>
+
+                                                <td className="px-4 py-2">
+                                                    {splitIntoChunks(member.UserFamilyName, 15).map((chunk: string, i: number) => (
+                                                        <p key={i}>{chunk}</p>
+                                                    ))}
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    {splitIntoChunks(member.UserName, 15).map((chunk: string, i: number) => (
+                                                        <p key={i}>{chunk}</p>
+                                                    ))}
+                                                </td>
                                             </tr>
                                         ))
                                     ) : (
@@ -104,9 +134,31 @@ function StationMembersData() {
                                             </td>
                                         </tr>
                                     )
+
+
                                 )}
                             </tbody>
                         </table>
+
+                        <div className="flex justify-between mt-4">
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={handlePrevPage}
+                                className={`px-4 py-2 ${currentPage === 1 ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Previous
+                            </button>
+
+                            <span className="px-4 py-2">Page {pagination.current_page} of {pagination.last_page}</span>
+
+                            <button
+                                disabled={currentPage === pagination.last_page}
+                                onClick={handleNextPage}
+                                className={`px-4 py-2 ${currentPage === pagination.last_page ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
 
                 </div>

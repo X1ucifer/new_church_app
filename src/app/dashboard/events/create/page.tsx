@@ -22,15 +22,14 @@ const generateTimeOptions: any = () => {
 };
 
 const eventSchema = z.object({
-    eventName: z.string().min(1, 'Event name is required').max(50, 'Event name must be less than 50 characters').regex(/^[a-zA-Z\s]+$/, 'Name cannot contain special characters'),
+    eventName: z.string().min(1, 'Event name is required').max(100, 'Event name must be less than 50 characters'),
     eventType: z.string().min(1, 'Event type is required'),
     leader: z
         .string()
-        .min(1, 'Leader is required')
-        .regex(/^[a-zA-Z\s]*$/, 'Leader name can only contain letters and spaces'),
+        .min(1, 'Leader is required'),
     time: z.string().min(1, 'Time is required'),
     date: z.string().min(1, 'Date is required'),
-    EventChurchName: z.string().min(1, 'Pastoral Church name is required').regex(/^[a-zA-Z\s]*$/, 'Leader name can only contain letters and spaces'),
+    EventChurchName: z.string().min(1, 'Pastoral Church name is required'),
 })
 
 export default function NewEvent({ onClose }: any) {
@@ -60,6 +59,7 @@ export default function NewEvent({ onClose }: any) {
         handleSubmit,
         formState: { errors },
         setValue,
+        reset
     } = useForm({
         resolver: zodResolver(eventSchema),
     });
@@ -71,6 +71,7 @@ export default function NewEvent({ onClose }: any) {
             },
             {
                 onSuccess: () => {
+                    reset();
                     onClose();
                 },
             }
@@ -95,13 +96,9 @@ export default function NewEvent({ onClose }: any) {
                         <input
                             type="text"
                             id="eventName"
-                            maxLength={20}
                             {...register('eventName')}
                             className="w-full p-2 border rounded-md"
-                            placeholder="Prayer Meeting"
-                            onInput={(e: any) => {
-                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                            }}
+                            placeholder="Enter Event Name"
                         />
                         {errors.eventName && typeof errors.eventName.message === 'string' && (
                             <p className="text-red-500 text-sm">{errors?.eventName.message}</p>
@@ -139,13 +136,9 @@ export default function NewEvent({ onClose }: any) {
                         <input
                             type="text"
                             id="leader"
-                            maxLength={20}
                             {...register('leader')}
                             className="w-full p-2 border rounded-md"
-                            placeholder="Fedrick"
-                            onInput={(e: any) => {
-                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                            }}
+                            placeholder="Enter Leader Name"
                         />
                         {errors.leader && typeof errors.leader.message === 'string' && (
                             <p className="text-red-500 text-sm">{errors.leader.message}</p>
@@ -227,12 +220,9 @@ export default function NewEvent({ onClose }: any) {
                         <input
                             type="text"
                             id="EventChurchName"
-                            maxLength={30}
+                            placeholder="Enter Church Name"
                             {...register('EventChurchName')}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            onInput={(e: any) => {
-                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                            }}
                         />
                         {errors.EventChurchName && typeof errors.EventChurchName.message === 'string' && (
                             <p className="text-red-500 text-sm">{errors?.EventChurchName.message}</p>

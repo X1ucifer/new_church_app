@@ -11,6 +11,9 @@ import { RootState, AppDispatch } from '../../../redux/store';
 import { fetchEventsSuccess } from '../../../redux/slices/eventSlice';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import withAuth from '../../../app/authCheck';
+import Lottie from 'lottie-react';
+import emptyAnimation from '../../../animation/empty.json';
 
 const MySwal = withReactContent(Swal);
 
@@ -66,15 +69,18 @@ function ChurchEvents() {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteEvent(id);
-        MySwal.fire('Deleted!', 'The event has been deleted.', 'success');
+        MySwal.fire('Deleted!', 'The event has been deleted.', 'success').then(() => {
+          window.location.reload();
+        });
       }
     });
   };
 
+
   const handleEdit = (id: number) => {
     navigate(`/dashboard/events/edit-event/${id}`); // Use navigate from React Router
   };
-  
+
   const handleAttendance = (id: number) => {
     navigate(`/dashboard/events/attendance/${id}`);
   };
@@ -99,61 +105,82 @@ function ChurchEvents() {
         <h2 className="text-2xl font-bold mb-4">Events</h2>
         <h3 className="p-4 font-semibold ml-[-20px] md:ml-[0px]">Upcoming Events</h3>
         <div className="bg-white rounded-lg md:shadow overflow-hidden">
-          <ul className="h-[100vh]">
-            {isFetching ? (
-              skeletonRows.map((_, index) => (
-                <li key={index} className="border-t">
-                  <Skeleton width={20} />
-                  <Skeleton width={150} />
-                  <Skeleton width={150} />
-                </li>
-              ))
-            ) : (
-              <>
-                {events?.map((event: any, index: number) => (
-                  <li key={index} className="border-t border-gray-200">
-                    <div className="flex items-center justify-between p-4 relative">
-                      <Link to={`/dashboard/events/attendance/${event.id}`}>
-                        <div>
-                          <h4 className="font-semibold">{event.EventName}</h4>
-                          <p className="text-sm text-gray-500 mt-2">
-                            {event.EventDate} {event.EventDay}
-                          </p>
-                        </div>
-                      </Link>
+          <ul
+            className="overflow-auto"
+            style={{ height: events?.length ? `${events.length * 200}px` : '100vh' }} // Adjust height based on events
+          >            {isFetching ? (
+            skeletonRows.map((_, index) => (
+              <li key={index} className="border-t">
+                <Skeleton width={20} />
+                <Skeleton width={150} />
+                <Skeleton width={150} />
+              </li>
+            ))
+          ) : (
+            <>
+              {events && events.length > 0 ? (
+                <ul>
+                  {events.map((event: any, index: number) => (
+                    <li key={index} className="border-t border-gray-200">
+                      <div className="flex items-center justify-between p-4 relative">
+                        <Link to={`/dashboard/events/attendance/${event.id}`}>
+                          <div>
+                            <h4 className="font-semibold">{event.EventName}</h4>
+                            <p className="text-sm text-gray-500 mt-2">
+                              {event.EventDate} {event.EventDay} <br />
+                              {event.EventChurchName}
+                            </p>
+                          </div>
+                        </Link>
 
-                      <button
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        onClick={() => handleMoreClick(index)}
-                      >
-                        <MoreVertical className="h-5 w-5 text-gray-400" />
-                      </button>
-
-                      {selectedEvent === index && (
-                        <div
-                          ref={dropdownRef}
-                          className="absolute right-0 top-10 bg-white shadow-lg rounded-md p-2 z-[999]"
+                        <button
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          onClick={() => handleMoreClick(index)}
                         >
-                          <button onClick={() => handleAttendance(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            Add Attendance
-                          </button>
-                          <button onClick={() => handleEdit(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            Edit
-                          </button>
-                          {userType == "Admin" && (
-                            <>
-                              <button onClick={() => handleDelete(event.id)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <MoreVertical className="h-5 w-5 text-gray-400" />
+                        </button>
+
+                        {selectedEvent === index && (
+                          <div
+                            ref={dropdownRef}
+                            className="absolute right-0 top-10 bg-white shadow-lg rounded-md p-2 z-[999]"
+                          >
+                            <button
+                              onClick={() => handleAttendance(event.id)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              Add Attendance
+                            </button>
+                            <button
+                              onClick={() => handleEdit(event.id)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              Edit
+                            </button>
+                            {userType === "Admin" && (
+                              <button
+                                onClick={() => handleDelete(event.id)}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
                                 Delete
                               </button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </>
-            )}
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Lottie
+                  animationData={emptyAnimation}
+                  loop={true}
+                  style={{ width: '100%', height: '300px' }}
+                />
+              )}
+
+            </>
+          )}
           </ul>
         </div>
       </main>
@@ -179,4 +206,5 @@ function ChurchEvents() {
   );
 }
 
-export default ChurchEvents;
+export default withAuth(ChurchEvents);
+

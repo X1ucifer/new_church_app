@@ -10,7 +10,7 @@ export default function PasswordSetup() {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<any | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -38,7 +38,7 @@ export default function PasswordSetup() {
                 navigate('/login');
                 },
                 onError: (error: Error) => {
-                    setError('Failed to reset password. Please try again.');
+                    setError(`${error}`);
                 }
             }
         );
@@ -125,6 +125,7 @@ export default function PasswordSetup() {
                         </div>
                         <button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         >
                             {isLoading ? 'Setting Password...' : 'Set Password'}

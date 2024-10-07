@@ -3,6 +3,7 @@ import { Home, FileText, Calendar, User, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom'; // Use React Router for navigation
 import { updateRights, getRights } from '../../utils/api'; // Adjust the import path as needed
 import Skeleton from 'react-loading-skeleton';
+import Swal from 'sweetalert2';
 
 export interface IAppProps {
     activeTab: string;
@@ -15,9 +16,28 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
     const navigate = useNavigate();
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/'); 
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will be logged out from your account.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, log out!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                navigate('/'); // Redirect to the home page or login page
+                Swal.fire(
+                    'Logged Out!',
+                    'You have been logged out successfully.',
+                    'success'
+                );
+            }
+        });
     };
 
     React.useEffect(() => {
@@ -121,7 +141,7 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                         )
                             : (
                                 <>
-                                 <button
+                                    <button
                                         className={`flex flex-col items-center ${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'}`}
                                         onClick={logout}
                                     >

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { addEvent, deleteEvent, filterMembers, getAttendance, getEvent, getRights, upcomingEvenrs, updateEvent } from '../utils/api';
 import { useDispatch } from 'react-redux';
-import { addEvents,  deleteEvent as deleteEventAction } from '../redux/slices/eventSlice';
+import { addEvents, deleteEvent as deleteEventAction } from '../redux/slices/eventSlice';
 
 export const useUpcomingEvents = (token: string) => {
   return useQuery('upcomingEvents', () => upcomingEvenrs(token), {
@@ -73,27 +73,45 @@ export const useDeleteEvent = (token: string) => {
   const queryClient = useQueryClient();
 
   return useMutation(
-      (id: number) => deleteEvent(token, id),
-      {
-          onSuccess: (data, id) => {
-              dispatch(deleteEventAction(id)); 
-              queryClient.invalidateQueries('upcomingEvents'); // Invalidate React Query cache to refetch data
-          },
-          onError: (error) => {
-              console.error('Error deleting event:', error);
-          },
-      }
-  );
-};
-
-export const useFilterMembers = (token: string, filter_type: string, id?: any) => {
-  return useQuery(
-    ['filteredMembers', filter_type],
-    () => filterMembers(token, filter_type, id),
+    (id: number) => deleteEvent(token, id),
     {
-      cacheTime: 0, // Ensures no caching
-      refetchOnWindowFocus: true, 
-      staleTime: 0, // Ensures data is considered stale immediately
+      onSuccess: (data, id) => {
+        dispatch(deleteEventAction(id));
+        queryClient.invalidateQueries('upcomingEvents'); // Invalidate React Query cache to refetch data
+      },
+      onError: (error) => {
+        console.error('Error deleting event:', error);
+      },
     }
   );
 };
+
+export const useFilterMembers = (token: string, filter_type: string, page: number, id?: any) => {
+  return useQuery(
+    ['filteredMembers', filter_type, page],
+    () => filterMembers(token, filter_type, page, id),
+    {
+      keepPreviousData: true, // Ensures the previous data is kept while fetching new data
+      cacheTime: 0, // No caching
+      refetchOnWindowFocus: true,
+      staleTime: 0,
+    }
+  );
+};
+
+
+
+// export const useFilterMembers = (token: string, filter_type: string, id?: any) => {
+//   return useQuery(
+//     ['filteredMembers', filter_type, id], // Include 'id' in the query key for uniqueness
+//     () => filterMembers(token, filter_type, id),
+//     {
+//       cacheTime: 5 * 60 * 1000, // Cache data for 5 minutes
+//       staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+//       refetchOnWindowFocus: true, // Refetch when window gains focus
+//       refetchOnReconnect: true, // Refetch on network reconnect
+//       refetchIntervalInBackground: false, // Disable background polling when not active
+//     }
+//   );
+// };
+

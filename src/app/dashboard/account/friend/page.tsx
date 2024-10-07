@@ -14,7 +14,24 @@ function FriendData() {
 
     const navigate = useNavigate();
 
-    const { data: members, isLoading: filterLoading, isError } = useFilterMembers(token, "Friend");
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Friend", currentPage);
+
+    const members = membersData?.data || [];
+    const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
+
+    const handleNextPage = () => {
+        if (currentPage < pagination.last_page) {
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    };
 
     const filteredMembers = members?.filter((member: any) =>
         member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,7 +107,8 @@ function FriendData() {
                                                 className="border-t"
                                                 onClick={() => navigate(`/dashboard/account/profile/${member.id}`)}
                                             >
-                                                <td className="px-4 py-2">{index + 1}</td>
+                                                <td className="px-4 py-2">{(currentPage - 1) * pagination.per_page + index + 1}</td>
+
                                                 <td className="px-4 py-2">{member.UserFamilyName}</td>
                                                 <td className="px-4 py-2">{member.UserName}</td>
                                             </tr>
@@ -105,6 +123,27 @@ function FriendData() {
                                 )}
                             </tbody>
                         </table>
+
+                        <div className="flex justify-between mt-4">
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={handlePrevPage}
+                                className={`px-4 py-2 ${currentPage === 1 ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Previous
+                            </button>
+
+                            <span className="px-4 py-2">Page {pagination.current_page} of {pagination.last_page}</span>
+
+                            <button
+                                disabled={currentPage === pagination.last_page}
+                                onClick={handleNextPage}
+                                className={`px-4 py-2 ${currentPage === pagination.last_page ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Next
+                            </button>
+                        </div>
+
                     </div>
 
                 </div>

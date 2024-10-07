@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import { getRights } from '../../utils/api';
 import { useNavigate } from 'react-router-dom'; // Use useNavigate instead of useNavigation
 import Skeleton from 'react-loading-skeleton';
+import Swal from 'sweetalert2';
 
 export interface IAppProps {
     activeTab: string;
@@ -15,9 +16,28 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
     const navigate = useNavigate();
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will be logged out from your account.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, log out!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                navigate('/'); // Redirect to the home page or login page
+                Swal.fire(
+                    'Logged Out!',
+                    'You have been logged out successfully.',
+                    'success'
+                );
+            }
+        });
     };
 
     React.useEffect(() => {
@@ -59,10 +79,14 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
 
     return (
         <header className="bg-white p-4 hidden md:flex items-center justify-between">
-            <div className="flex items-center">
-                <img src="/logo.png" width={40} height={40} alt="Church Logo" className="mr-2" />
-                <span className="font-bold text-lg">True Jesus Church</span>
-            </div>
+            <Link to="/dashboard"> {/* Change href to to */}
+                <div className="flex items-center">
+
+                    <img src="/logo.png" width={40} height={40} alt="Church Logo" className="mr-2" />
+                    <span className="font-bold text-lg">True Jesus Church</span>
+                </div>
+
+            </Link>
             <nav>
                 <ul className="flex space-x-4">
 

@@ -16,6 +16,7 @@ interface EventDetails {
     EventDate: string;
     EventTime: string;
     EventLeader: string;
+    EventChurchName: string;
 }
 
 interface Member {
@@ -57,6 +58,12 @@ const Attendance: React.FC<any> = () => {
         UserChurchName: '',
     });
 
+    // const [selectedMembers, setSelectedMembers] = useState<{ [key: string]: number[] }>({
+    //     Member: [],
+    //     Friend: [],
+    //     'Outstation Member': []
+    //   });
+
     const { id } = useParams<{ id: string }>();
 
     const navigate = useNavigate();
@@ -65,7 +72,35 @@ const Attendance: React.FC<any> = () => {
 
     const { data: event } = useEventDetails(token, userId);
     const { data: attendance } = useAddendance(token, userId);
-    const { data: members } = useFilterMembers(token, activeTab, userId);
+    const [isPageLoading, setIsPageLoading] = useState(false);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: membersData, isLoading } = useFilterMembers(token, activeTab, currentPage, userId);
+
+    const members = membersData?.data || [];
+    const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
+
+    const handleNextPage = async () => {
+        if (currentPage < pagination.last_page) {
+            setIsPageLoading(true); // Start page loading
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = async () => {
+        if (currentPage > 1) {
+            setIsPageLoading(true); // Start page loading
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    };
+
+
+    useEffect(() => {
+        if (!isLoading) {
+            setIsPageLoading(false);
+        }
+    }, [membersData, isLoading]);
+
 
     useEffect(() => {
         if (event) {
@@ -91,52 +126,144 @@ const Attendance: React.FC<any> = () => {
         }
     }, [members]);
 
-    const handleAttendanceChange = (id: number) => {
-        setSelectedMembers((prevSelected) => {
-            if (prevSelected.includes(id)) {
-                // If already selected, remove from selectedMembers (unmark)
-                return prevSelected.filter((memberId) => memberId !== id);
-            } else {
-                // Otherwise, add to selectedMembers (mark)
-                return [...prevSelected, id];
-            }
-        });
-    };
-
-
-    const handleSubmitAttendance = async () => {
-        if (selectedMembers.length === 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Please select users',
-                confirmButtonText: 'OK',
-            });
-            return;
+    useEffect(() => {
+        const storedData = localStorage.getItem('selectedMembers');
+        if (storedData) {
+            setSelectedMembers(JSON.parse(storedData) || []); // Ensure it's an array
         }
-        try {
+    }, []);
+
+    // Store selected members in localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem('selectedMembers', JSON.stringify(selectedMembers));
+    }, [selectedMembers]);
+
+
+    // const handleAttendanceChange = (id: number) => {
+    //     setSelectedMembers((prevSelected) => {
+    //         if (prevSelected.includes(id)) {
+    //             // If already selected, remove from selectedMembers (unmark)
+    //             return prevSelected.filter((memberId) => memberId !== id);
+    //         } else {
+    //             // Otherwise, add to selectedMembers (mark)
+    //             return [...prevSelected, id];
+    //         }
+    //     });
+    // };
+
+    // const handleAttendanceChange = async (memberId: string) => {
+    //     const memberIdAsNumber = Number(memberId);
+    //     let updatedSelectedMembers: any;
+
+    //     // Check if the member is already selected
+    //     if (selectedMembers.includes(memberId as any)) {
+    //         // Remove member from selectedMembers if it's already selected
+    //         updatedSelectedMembers = selectedMembers.filter(id => id !== memberIdAsNumber);
+    //     } else {
+    //         // Add the member to selectedMembers if it's not selected
+    //         updatedSelectedMembers = [...selectedMembers, memberId];
+    //     }
+
+    //     // Update the selected members state
+    //     setSelectedMembers(updatedSelectedMembers);
+
+    //     // Prepare data for the API call
+    //     const data = {
+    //         UserType: activeTab, // Assuming activeTab is related to attendance type or user role
+    //         users: updatedSelectedMembers, // Send the updated members
+    //     };
+
+    //     // Make the API call to update attendance for the selected members
+    //     try {
+    //         await updateAttendance(token, userId, data); // Replace with your actual API function
+    //         console.log('Attendance updated successfully:', data);
+    //     } catch (error) {
+    //         console.error('Error updating attendance:', error);
+    //         // Optionally, you can handle the error here (e.g., show a message)
+    //     }
+    // };
+
+    const handleAttendanceChange = async (memberId: string) => {
+        const memberIdAsNumber = Number(memberId);
+        let updatedSelectedMembers: any;
+
+        // Check if the member is already selected
+        if (selectedMembers.includes(memberIdAsNumber)) {
+            // Member is unselected, update selectedMembers
+            updatedSelectedMembers = selectedMembers.filter(id => id !== memberIdAsNumber);
+
+            // Prepare data to send the unselected member's ID
             const data = {
-                UserType: activeTab,
-                users: selectedMembers,
+                UserType: activeTab, // Assuming activeTab relates to attendance type or user role
+                users: [memberIdAsNumber], // Send only the unselected memberId in the array
             };
 
-            console.log("ioo", data)
-            await updateAttendance(token, userId, data);
-            Swal.fire({
-                icon: 'success',
-                title: 'Successful',
-                text: 'Attendance added!',
-                confirmButtonText: 'OK',
-            });
-        } catch (error) {
-            console.error('Error submitting attendance:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'An error occurred',
-                text: 'Please try again later.',
-                confirmButtonText: 'OK',
-            });
+            // Make the API call for unselect
+            try {
+                await updateAttendance(token, userId, data); // Replace with your actual API function
+                console.log('Attendance unselected successfully:', data);
+            } catch (error) {
+                console.error('Error unselecting attendance:', error);
+            }
+        } else {
+            // Member is selected, update selectedMembers
+            updatedSelectedMembers = [...selectedMembers, memberIdAsNumber];
+
+            // Prepare data to send the selected member's ID
+            const data = {
+                UserType: activeTab, // Assuming activeTab relates to attendance type or user role
+                users: [memberIdAsNumber], // Send only the selected memberId in the array
+            };
+
+            // Make the API call for select
+            try {
+                await updateAttendance(token, userId, data); // Replace with your actual API function
+                console.log('Attendance selected successfully:', data);
+            } catch (error) {
+                console.error('Error selecting attendance:', error);
+            }
         }
+
+        // Update the selected members state
+        setSelectedMembers(updatedSelectedMembers);
     };
+
+
+
+
+    // const handleSubmitAttendance = async () => {
+    //     if (selectedMembers.length === 0) {
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'Please select users',
+    //             confirmButtonText: 'OK',
+    //         });
+    //         return;
+    //     }
+    //     try {
+    //         const data = {
+    //             UserType: activeTab,
+    //             users: selectedMembers,
+    //         };
+
+    //         console.log("ioo", data)
+    //         await updateAttendance(token, userId, data);
+    //         Swal.fire({
+    //             icon: 'success',
+    //             title: 'Successful',
+    //             text: 'Attendance added!',
+    //             confirmButtonText: 'OK',
+    //         });
+    //     } catch (error) {
+    //         console.error('Error submitting attendance:', error);
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'An error occurred',
+    //             text: 'Please try again later.',
+    //             confirmButtonText: 'OK',
+    //         });
+    //     }
+    // };
 
     const filteredMembers = members?.filter(
         (member: Member) =>
@@ -174,9 +301,6 @@ const Attendance: React.FC<any> = () => {
             console.error('Error adding friend:', error);
         }
     };
-
-    const handleOpenModal = () => setIsModalOpen(true);
-    const handleCloseModal = () => setIsModalOpen(false);
 
 
     return (
@@ -221,6 +345,10 @@ const Attendance: React.FC<any> = () => {
                             <p className="text-sm text-gray-500">Leader</p>
                             <p className="font-medium">{eventDetails?.EventLeader}</p>
                         </div>
+                        <div>
+                            <p className="text-sm text-gray-500">Church Name</p>
+                            <p className="font-medium">{eventDetails?.EventChurchName}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -257,6 +385,8 @@ const Attendance: React.FC<any> = () => {
                 {/* Members Table */}
                 <div className="px-4 pb-4">
                     <div className="overflow-y-auto max-h-64"> {/* Set a max height and allow vertical scrolling */}
+
+
                         <table className="w-full">
                             <thead>
                                 <tr className="text-left text-gray-500">
@@ -267,36 +397,71 @@ const Attendance: React.FC<any> = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredMembers.map((member: any, index: number) => (
-                                    <tr key={member.id} className="border-t">
-                                        <td className="py-2">{index + 1}</td>
-                                        <td className="py-2">{member.UserFamilyName}</td>
-                                        <td className="py-2">{member.UserName}</td>
-                                        <td className="py-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedMembers.includes(member.id)}
-                                                onChange={() => handleAttendanceChange(member.id)}
-                                                className="h-5 w-5 text-blue-600 rounded"
-                                            />
+                                {isLoading || isPageLoading ? (
+                                    <tr>
+                                        <td colSpan={4} className="text-center py-4">
+                                            <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500" role="status">
+                                                <span className="visually-hidden"></span>
+                                            </div>
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredMembers.map((member: any, index: number) => (
+                                        <tr key={member.id} className="border-t">
+                                            <td className="py-2">{(currentPage - 1) * pagination.per_page + index + 1}</td>
+                                            <td className="py-2 max-w-[140px] break-words">
+                                                {member.UserFamilyName}
+                                            </td>
+                                            <td className="py-2 max-w-[140px] break-words">
+                                                {member.UserName}
+                                            </td>
+                                            <td className="py-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedMembers.includes(member.id)}
+                                                    onChange={() => handleAttendanceChange(member.id)}
+                                                    className="h-5 w-5 text-blue-600 rounded"
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
+
+                        {/* Pagination Controls */}
+                        <div className="flex justify-between mt-4">
+                            <button
+                                disabled={currentPage === 1 || isPageLoading}
+                                onClick={handlePrevPage}
+                                className={`px-4 py-2 ${currentPage === 1 || isPageLoading ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Previous
+                            </button>
+
+                            <span className="px-4 py-2">Page {pagination.current_page} of {pagination.last_page}</span>
+
+                            <button
+                                disabled={currentPage === pagination.last_page || isPageLoading}
+                                onClick={handleNextPage}
+                                className={`px-4 py-2 ${currentPage === pagination.last_page || isPageLoading ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Next
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 
 
                 {/* Save Button */}
-                <div className="p-4 border-t">
+                {/* <div className="p-4 border-t">
                     <button onClick={handleSubmitAttendance}
                         className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">
                         Save
                     </button>
-                </div>
+                </div> */}
             </div>
-
 
 
         </div>

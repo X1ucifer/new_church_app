@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import { useRegister, useChurches } from '../../hooks/useRegister';
@@ -15,10 +15,10 @@ const schema = z.object({
     UserGender: z.string().min(1, 'Gender is required'),
     UserMaritalStatus: z.string().min(1, 'Marital Status is required'),
     UserDOB: z.string().min(1, 'Date of Birth is required'),
-    UserPhone: z.string().min(10, 'Phone number must be at least 10 digits'),
-    UserEmail: z.string().email('Invalid email address'),
+    UserPhone: z.string().min(1, 'Phone number is required'),
+    UserEmail: z.string().email('Email is required'),
     UserAddress: z.string().min(1, 'Address is required'),
-    UserChurchName: z.string().min(1, 'Pastoral Church name is required'),
+    UserChurchName: z.string().min(1, 'Pastoral Church Name is required'),
     UserType: z.string().min(1, 'User Type is required'),
 });
 
@@ -66,16 +66,65 @@ export default function Register() {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setProfileImagePreview(reader.result as string);
+                localStorage.setItem('profileImage', reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    const { register, setValue, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: zodResolver(schema),
     });
 
-    console.log("image", profileImage)
+    useEffect(() => {
+        const savedFormData = localStorage.getItem('formData');
+        if (!savedFormData) {
+            localStorage.removeItem('profileImage');  // Remove profileImage if no formData
+        }
+    }, [])
+
+    useEffect(() => {
+        // Check if the form data has been loaded before
+        const dataLoadedFlag = localStorage.getItem('dataLoaded');
+
+        if (dataLoadedFlag === null) {
+            // Load saved form data from localStorage
+            const savedFormData = localStorage.getItem('formData');
+            if (savedFormData) {
+                const parsedData = JSON.parse(savedFormData);
+                setFormData(parsedData);
+
+                // Set default values in the form
+                setValue('UserName', parsedData.UserName || '');
+                setValue('UserFamilyName', parsedData.UserFamilyName || '');
+                setValue('UserDOB', parsedData.UserDOB || '');
+                setValue('UserPhone', parsedData.UserPhone || '');
+                setValue('UserEmail', parsedData.UserEmail || '');
+                setValue('UserAddress', parsedData.UserAddress || '');
+                setValue('UserAddress', parsedData.UserAddress || '');
+                setValue('UserGender', parsedData.UserGender || '');
+                setValue('UserMaritalStatus', parsedData.UserMaritalStatus || '');
+                setValue('UserType', parsedData.UserType || '');
+                setValue('UserStatus', parsedData.UserStatus || '');
+                setValue('UserGroupID', parsedData.UserGroupID || '');
+                setValue('UserChurchName', parsedData.UserChurchName || '');
+
+                localStorage.setItem('dataLoaded', 'true');
+
+            }
+
+            const savedImage = localStorage.getItem('profileImage');
+            if (savedImage) {
+                setProfileImagePreview(savedImage);
+            }
+
+        } else {
+            // Clear the form data from localStorage after the first refresh
+            localStorage.removeItem('formData');
+            localStorage.removeItem('dataLoaded');
+            localStorage.removeItem('profileImage');
+        }
+    }, [setValue]);
 
     const onSubmit = (data: any) => {
         let formData: any = new FormData();
@@ -100,6 +149,8 @@ export default function Register() {
         mutate(formData, {
             onSuccess: (data) => {
                 localStorage.setItem('UserEmail', data.UserEmail);
+                localStorage.setItem('formData', JSON.stringify(data));
+
                 router('/register/set-password');
 
                 console.log('Registration successful:', data);
@@ -165,11 +216,7 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserName"
-                                maxLength={20}
                                 {...register('UserName')}
-                                onInput={(e: any) => {
-                                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserName && typeof errors.UserName.message === 'string' && (
@@ -182,18 +229,14 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserFamilyName"
-                                maxLength={20}
-                                {...register('UserFamilyName')}
-                                onChange={handleChange}
-                                onInput={(e: any) => {
-                                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                }}
+                                {...register('UserFamilyName')}  // Keep using the register from React Hook Form
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserFamilyName && typeof errors.UserFamilyName.message === 'string' && (
                                 <p className="text-red-500 text-sm">{errors?.UserFamilyName.message}</p>
                             )}
                         </div>
+
 
                         <div className="flex space-x-4">
                             <div className="flex-1">
@@ -232,16 +275,32 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">D.O.B</label>
+                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                             <input
                                 type="date"
                                 id="UserDOB"
-                                {...register('UserDOB')}
+                                defaultValue={formData.UserDOB || ''}
+                                {...register('UserDOB', {
+                                    validate: (value) => {
+                                        const selectedDate = new Date(value);
+                                        const minDate = new Date('1940-01-01'); 
+                                        const maxDate = new Date();
+
+                                        if (selectedDate < minDate) {
+                                            return 'Date of birth cannot be before 1900.';
+                                        }
+                                        if (selectedDate > maxDate) {
+                                            return 'Date of birth cannot be in the future.';
+                                        }
+                                        return true;
+                                    },
+                                })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 max={new Date().toISOString().split('T')[0]}
+                                min="1900-01-01" // Minimum date to prevent unrealistic dates
                             />
                             {errors.UserDOB && typeof errors.UserDOB.message === 'string' && (
-                                <p className="text-red-500 text-sm">{errors?.UserDOB.message}</p>
+                                <p className="text-red-500 text-sm">{errors.UserDOB.message}</p>
                             )}
                         </div>
 
@@ -251,8 +310,8 @@ export default function Register() {
                                 type="tel"
                                 id="UserPhone"
                                 onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
-                                    if (value.length <= 10) { // Allow max 10 digits
+                                    const value = e.target.value; // Remove non-digit characters
+                                    if (value.length <= 500) { // Allow max 10 digits
                                         e.target.value = value;
                                     } else {
                                         e.target.value = value.slice(0, 10); // Trim to 10 digits
@@ -271,7 +330,21 @@ export default function Register() {
                             <input
                                 type="email"
                                 id="UserEmail"
-                                {...register('UserEmail')}
+                                defaultValue={formData.UserEmail || ''}
+                                {...register('UserEmail', {
+                                    required: 'Email is required.',
+                                    validate: value => {
+                                        if (/\s/.test(value)) {
+                                            return 'Email cannot contain spaces.';
+                                        }
+                                        return true; // Return true if validation passes
+                                    }
+                                })}
+                                onKeyPress={(e) => {
+                                    if (e.key === ' ') {
+                                        e.preventDefault(); // Prevent space character
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserEmail && typeof errors.UserEmail.message === 'string' && (
@@ -285,9 +358,6 @@ export default function Register() {
                                 id="UserAddress"
                                 {...register('UserAddress')}
                                 rows={3}
-                                onInput={(e: any) => {
-                                    e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s,._\/-]/g, '');
-                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             ></textarea>
                             {errors.UserAddress && typeof errors.UserAddress.message === 'string' && (
@@ -320,11 +390,7 @@ export default function Register() {
                             <input
                                 type="text"
                                 id="UserChurchName"
-                                maxLength={30}
                                 {...register('UserChurchName')}
-                                onInput={(e: any) => {
-                                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                             {errors.UserChurchName && typeof errors.UserChurchName.message === 'string' && (
