@@ -11,12 +11,16 @@ function FriendData() {
     const [activeTab, setActiveTab] = useState('Account');
 
     const token = localStorage.getItem('token') || '';
-
     const navigate = useNavigate();
 
-
     const [currentPage, setCurrentPage] = useState(1);
-    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Friend", currentPage);
+
+    const handleSearch = (e:any)=>{
+        setSearchTerm(e.target.value)
+        setCurrentPage(1);
+    }
+    // Include searchTerm in the hook
+    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Friend", currentPage, searchTerm);
 
     const members = membersData?.data || [];
     const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
@@ -33,13 +37,7 @@ function FriendData() {
         }
     };
 
-    const filteredMembers = members?.filter((member: any) =>
-        member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
-
     const skeletonRows = Array(5).fill(null);
-
 
     return (
         <>
@@ -52,7 +50,7 @@ function FriendData() {
                             <ArrowLeft className="h-5 w-5 mr-4" />
                             <p className='text-black font-medium'>Friends</p>
                         </button>
-                        <Link to="/dashboard/add-friend" >
+                        <Link to="/dashboard/add-friend">
                             <button className="text-blue-500 hover:text-blue-700 flex items-center">
                                 <Plus className="h-5 w-5 mr-1" />
                                 New
@@ -68,7 +66,7 @@ function FriendData() {
                                 placeholder="Search Name"
                                 className="w-full pl-10 pr-4 py-2 border rounded-md"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={handleSearch}
                             />
                             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                         </div>
@@ -100,15 +98,14 @@ function FriendData() {
                                         </tr>
                                     ))
                                 ) : (
-                                    filteredMembers.length ? (
-                                        filteredMembers.map((member: any, index: number) => (
+                                    members.length ? (
+                                        members.map((member: any, index: number) => (
                                             <tr
                                                 key={member.id}
                                                 className="border-t"
                                                 onClick={() => navigate(`/dashboard/account/profile/${member.id}`)}
                                             >
                                                 <td className="px-4 py-2">{(currentPage - 1) * pagination.per_page + index + 1}</td>
-
                                                 <td className="px-4 py-2">{member.UserFamilyName}</td>
                                                 <td className="px-4 py-2">{member.UserName}</td>
                                             </tr>
@@ -143,14 +140,11 @@ function FriendData() {
                                 Next
                             </button>
                         </div>
-
                     </div>
-
                 </div>
             </div>
         </>
-
-    )
+    );
 }
 
 export default withAuth(FriendData);

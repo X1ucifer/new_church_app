@@ -104,10 +104,10 @@ function ChurchEvents() {
       <main className="flex-grow container mx-auto p-4 md:p-8">
         <h2 className="text-2xl font-bold mb-4">Events</h2>
         <h3 className="p-4 font-semibold ml-[-20px] md:ml-[0px]">Upcoming Events</h3>
-        <div className="bg-white rounded-lg md:shadow overflow-hidden">
+        <div className="bg-white rounded-lg  overflow-hidden">
           <ul
             className="overflow-auto"
-            style={{ height: events?.length ? `${events.length * 200}px` : '100vh' }} // Adjust height based on events
+            style={{ height: events?.length ? `${events.length * 180}px` : '100vh' }} // Adjust height based on events
           >            {isFetching ? (
             skeletonRows.map((_, index) => (
               <li key={index} className="border-t">

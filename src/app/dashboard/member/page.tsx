@@ -12,30 +12,56 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DesktopHeader } from '../../../components/partials/desktopHeader'
 import withAuth from '../../../app/authCheck'
 
+// const userSchema = z.object({
+//     UserName: z
+//         .string()
+//         .min(1, 'Name is required'),
+//     UserFamilyName: z
+//         .string()
+//         .min(1, 'Family Name is required'),
+//     UserGender: z.string().min(1, 'Gender is required'),
+//     UserMaritalStatus: z.string().min(1, 'Marital status is required'),
+//     UserDOB: z.string().refine((val) => !!val, {
+//         message: 'Date of Birth is required',
+//     }),
+
+//     UserPhone: z
+//         .string()
+//         .optional(),
+
+//     UserEmail: z.string().optional(),
+//     UserAddress: z.string().optional(),
+//     UserStatus: z.string().min(1, 'Status is required'),
+//     UserType: z.string().min(1, 'User Type is required'),
+//     UserGroupID: z.string().optional(),
+//     UserChurchName: z.string().optional(),
+// });
+
 const userSchema = z.object({
-    UserName: z
-        .string()
-        .min(1, 'Name is required'),
-    UserFamilyName: z
-        .string()
-        .min(1, 'Family Name is required'),
+    UserName: z.string().min(1, 'Name is required'),
+    UserFamilyName: z.string().min(1, 'Family Name is required'),
     UserGender: z.string().min(1, 'Gender is required'),
     UserMaritalStatus: z.string().min(1, 'Marital status is required'),
     UserDOB: z.string().refine((val) => !!val, {
         message: 'Date of Birth is required',
     }),
-
-    UserPhone: z
-        .string()
-        .min(1, 'Mobile Number is required'),
-
-    UserEmail: z.string().email('Email is required'),
-    UserAddress: z.string().min(1, 'Address is required'),
+    UserPhone: z.string().optional(),
+    UserEmail: z.string().optional(),
+    UserAddress: z.string().optional(),
     UserStatus: z.string().min(1, 'Status is required'),
     UserType: z.string().min(1, 'User Type is required'),
     UserGroupID: z.string().optional(),
-    UserChurchName: z.string().min(1, 'Pastoral Church Name is required'),
+    UserChurchName: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if ((data.UserType === 'Pastor' || data.UserType === 'Exco') && !data.UserEmail) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Email is required for Pastor or Exco',
+            path: ['UserEmail'],
+        });
+    }
 });
+
 
 
 function AddMember() {
@@ -244,7 +270,7 @@ function AddMember() {
                             >
                                 <ArrowLeft className="h-6 w-6 text-blue-400" />
                             </button>
-                            <h2 className="text-xl font-bold">New Member</h2>
+                            <h2 className="text-xl font-bold">New Member </h2>
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -276,7 +302,7 @@ function AddMember() {
 
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Name
+                                    Name <span className='text-red-500'>*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -292,7 +318,7 @@ function AddMember() {
                             </div>
 
                             <div>
-                                <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name</label>
+                                <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name <span className='text-red-500'>*</span></label>
                                 <input
                                     type="text"
                                     id="UserFamilyName"
@@ -308,7 +334,7 @@ function AddMember() {
 
                             <div className="flex space-x-4">
                                 <div className="flex-1">
-                                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender <span className='text-red-500'>*</span></label>
                                     <select
                                         id="UserGender"
                                         {...register('UserGender')}
@@ -325,7 +351,7 @@ function AddMember() {
                                 </div>
 
                                 <div className="flex-1">
-                                    <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                                    <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status <span className='text-red-500'>*</span></label>
                                     <select
                                         id="UserMaritalStatus"
                                         {...register('UserMaritalStatus')}
@@ -346,7 +372,7 @@ function AddMember() {
                             </div>
 
                             <div>
-                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth <span className='text-red-500'>*</span></label>
                                 <input
                                     type="date"
                                     id="UserDOB"
@@ -402,7 +428,7 @@ function AddMember() {
 
 
                             <div>
-                                <label htmlFor="emailId" className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
+                                <label htmlFor="emailId" className="block text-sm font-medium text-gray-700 mb-1">Email ID </label>
                                 <input
                                     type="email"
                                     id="UserEmail"
@@ -431,7 +457,7 @@ function AddMember() {
 
 
                             <div>
-                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address </label>
                                 <textarea
                                     id="UserAddress"
                                     defaultValue={formData.UserAddress || ''}
@@ -447,7 +473,7 @@ function AddMember() {
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    User Type
+                                    User Type <span className='text-red-500'>*</span>
                                 </label>
                                 <select
                                     id="UserType"
@@ -470,7 +496,7 @@ function AddMember() {
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Status
+                                    Status <span className='text-red-500'>*</span>
                                 </label>
                                 <select
                                     id="UserStatus"
@@ -481,7 +507,7 @@ function AddMember() {
                                     <option value="Active">Active</option>
                                     <option value="Inactive">Inactive</option>
                                     <option value="Lost">Lost</option>
-                                    <option value="NeedVisting">NeedVisting</option>
+                                    <option value="NeedVisting">NeedVisiting</option>
                                     <option value="NeedAttention">NeedAttention</option>
                                 </select>
                             </div>
@@ -491,7 +517,7 @@ function AddMember() {
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Group
+                                    Group 
                                 </label>
                                 <select
                                     id="UserType"
@@ -517,7 +543,7 @@ function AddMember() {
                             )}
 
                             <div>
-                                <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
+                                <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name 
                                 </label>
                                 <input
                                     type="text"
@@ -535,7 +561,7 @@ function AddMember() {
                                 disabled={registerLoader}
                                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
-                                {registerLoader ? 'Registering...' : 'Register'}
+                                {registerLoader ? 'Saving...' : 'Save'}
                             </button>
 
                             {/* {error && <p className="error">{error.message}</p>} */}

@@ -1,68 +1,47 @@
-'use client'
-
-import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Search, Plus } from 'lucide-react'
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import withAuth from '../../../authCheck';
-import { useMembersData, useSearchMembers } from '../../../../hooks/useMembersData';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Search, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useFilterMembers } from '../../../../hooks/useEvents';
 import Skeleton from 'react-loading-skeleton';
+import withAuth from '../../../../app/authCheck';
 import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 function MembersData() {
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
+    const token = localStorage.getItem('token') || '';
     const [currentPage, setCurrentPage] = useState(1);
 
-    const router = useNavigate();
-    const token = localStorage.getItem('token') || '';
+    const handleSearch = (e:any)=>{
+        setSearchTerm(e.target.value)
+        setCurrentPage(1);
+    }
+    
+    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Member", currentPage, searchTerm); // Pass searchTerm here
+    const members = membersData?.data || [];
+    const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
 
-    const { data: searchedMembers, isLoading: isSearchLoading, error: searchError } = useSearchMembers(token, searchTerm);
-    const navigate = useNavigate();
-
-    const {
-        data: paginatedData,
-        error: paginationError,
-        isLoading: isPaginationLoading,
-        isError: isPaginationError,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-    } = useMembersData(token);
-
-    const loadMoreRef = useRef<HTMLDivElement>(null);
-
-    const paginatedMembers = paginatedData?.pages.flatMap((page) => page.users) || [];
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-
-            (entries) => {
-                console.log("dd", hasNextPage)
-
-                if (entries[0].isIntersecting && hasNextPage) {
-                    console.log("nesyt")
-
-                    fetchNextPage();
-                }
-            },
-            { threshold: 1 }
-        );
-
-        if (loadMoreRef.current) {
-            observer.observe(loadMoreRef.current);
+    const handleNextPage = () => {
+        if (currentPage < pagination.last_page) {
+            setCurrentPage(prevPage => prevPage + 1);
         }
+    };
 
-        return () => {
-            if (loadMoreRef.current) {
-                observer.unobserve(loadMoreRef.current);
-            }
-        };
-    }, [loadMoreRef, fetchNextPage, hasNextPage]);
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    };
 
     const skeletonRows = Array(5).fill(null);
+    const filteredMembers = members?.filter((member: any) =>
+        member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+
     const [activeTab, setActiveTab] = useState('Account');
 
-    const splitIntoChunks = (text: string, chunkSize: number) => {
+    const splitIntoChunks = (text: any, chunkSize: any) => {
         const chunks = [];
         for (let i = 0; i < text.length; i += chunkSize) {
             chunks.push(text.slice(i, i + chunkSize));
@@ -76,12 +55,13 @@ function MembersData() {
 
             <div className="min-h-screen bg-white text-black">
                 <div className="max-w-4xl mx-auto bg-white md:shadow-lg">
+                    {/* Header */}
                     <div className="flex justify-between items-center p-4">
                         <button onClick={() => navigate(-1)} className="text-blue-500 hover:text-blue-700 flex items-center">
                             <ArrowLeft className="h-5 w-5 mr-4" />
-                            <p className='text-black font-medium'>Members Data</p>
+                            <p className='text-black font-medium'>Members</p>
                         </button>
-                        <Link to="/dashboard/account/add-member" >
+                        <Link to="/dashboard/add-friend" state={"Member"}>
                             <button className="text-blue-500 hover:text-blue-700 flex items-center">
                                 <Plus className="h-5 w-5 mr-1" />
                                 New
@@ -97,7 +77,7 @@ function MembersData() {
                                 placeholder="Search Name"
                                 className="w-full pl-10 pr-4 py-2 border rounded-md"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={handleSearch}
                             />
                             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                         </div>
@@ -114,7 +94,7 @@ function MembersData() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {isSearchLoading || isPaginationLoading ? (
+                                {filterLoading ? (
                                     skeletonRows.map((_, index) => (
                                         <tr key={index} className="border-t">
                                             <td className="px-4 py-2">
@@ -129,26 +109,22 @@ function MembersData() {
                                         </tr>
                                     ))
                                 ) : (
-                                    (searchTerm ? searchedMembers : paginatedMembers)?.length ? (
-                                        (searchTerm ? searchedMembers : paginatedMembers).map((member: any, index: number) => (
+                                    filteredMembers.length ? (
+                                        filteredMembers.map((member: any, index: number) => (
                                             <tr
                                                 key={member.id}
-                                                className="border-t cursor-pointer"
+                                                className="border-t"
                                                 onClick={() => navigate(`/dashboard/account/profile/${member.id}`)}
                                             >
+                                                <td className="px-4 py-2">{(currentPage - 1) * pagination.per_page + index + 1}</td>
+
                                                 <td className="px-4 py-2">
-                                                    {paginatedMembers.indexOf(member) + 1}
-                                                </td>
-                                                {/* UserFamilyName with line break after 15 characters */}
-                                                <td className="px-4 py-2">
-                                                    {splitIntoChunks(member.UserFamilyName, 15).map((chunk: string, i: number) => (
+                                                    {splitIntoChunks(member.UserFamilyName, 15).map((chunk, i) => (
                                                         <p key={i}>{chunk}</p>
                                                     ))}
                                                 </td>
-
-                                                {/* UserName with line break after 15 characters */}
                                                 <td className="px-4 py-2">
-                                                    {splitIntoChunks(member.UserName, 15).map((chunk: string, i: number) => (
+                                                    {splitIntoChunks(member.UserName, 15).map((chunk, i) => (
                                                         <p key={i}>{chunk}</p>
                                                     ))}
                                                 </td>
@@ -164,14 +140,30 @@ function MembersData() {
                                 )}
                             </tbody>
                         </table>
-                    </div>
-                    <div ref={loadMoreRef} className="h-10 mt-4 flex justify-center items-center">
-                        {isFetchingNextPage ? <span>Loading more members...</span> : null}
+
+                        <div className="flex justify-between mt-4">
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={handlePrevPage}
+                                className={`px-4 py-2 ${currentPage === 1 ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Previous
+                            </button>
+
+                            <span className="px-4 py-2">Page {pagination.current_page} of {pagination.last_page}</span>
+
+                            <button
+                                disabled={currentPage === pagination.last_page}
+                                onClick={handleNextPage}
+                                className={`px-4 py-2 ${currentPage === pagination.last_page ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </>
-
     )
 }
 

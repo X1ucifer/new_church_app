@@ -53,7 +53,7 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
                     if (data) {
                         setUserType(parsedData.user.UserType);
 
-                        const userRights = data.find((right: any) => right.user_type === parsedData.user.UserType);
+                        const userRights = data.find((right: any) => right.user_type == parsedData.user.UserType);
 
                         if (userRights) {
                             setAccessRights(userRights);
@@ -100,48 +100,48 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
                         ))
                     ) : (
                         <>
-                            {accessRights.dashboard === '1' && (
+                            {accessRights.dashboard == '1' && (
                                 <li>
                                     <Link to="/dashboard"> {/* Change href to to */}
                                         <button
                                             onClick={() => setActiveTab('Home')}
-                                            className={`${activeTab === 'Home' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                            className={`${activeTab == 'Home' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
                                         >
                                             Home
                                         </button>
                                     </Link>
                                 </li>
                             )}
-                            {accessRights.report === '1' && (
+                            {accessRights.report == '1' && (
                                 <li>
                                     <Link to="/dashboard/reports"> {/* Change href to to */}
                                         <button
                                             onClick={() => setActiveTab('Report')}
-                                            className={`${activeTab === 'Report' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                            className={`${activeTab == 'Report' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
                                         >
                                             Report
                                         </button>
                                     </Link>
                                 </li>
                             )}
-                            {accessRights.events === '1' && (
+                            {accessRights.events == '1' && (
                                 <li>
                                     <Link to="/dashboard/events"> {/* Change href to to */}
                                         <button
                                             onClick={() => setActiveTab('Events')}
-                                            className={`${activeTab === 'Events' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                            className={`${activeTab == 'Events' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
                                         >
                                             Events
                                         </button>
                                     </Link>
                                 </li>
                             )}
-                            {accessRights.settings === '1' ? (
+                            {accessRights.settings == '1' ? (
                                 <li>
                                     <Link to="/dashboard/account"> {/* Change href to to */}
                                         <button
                                             onClick={() => setActiveTab('Account')}
-                                            className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                            className={`${activeTab == 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
                                         >
                                             Account
                                         </button>
@@ -152,7 +152,7 @@ export function DesktopHeader({ activeTab, setActiveTab }: IAppProps) {
                                     <li>
                                         <button
                                             onClick={logout}
-                                            className={`${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
+                                            className={`${activeTab == 'Account' ? 'text-blue-600' : 'text-gray-600'} hover:text-gray-900`}
                                         >
                                             Logout
                                         </button>

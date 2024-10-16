@@ -76,22 +76,7 @@ function UpdateMember() {
         }
 
         // Validation for UserDOB
-        else if (name === 'UserDOB') {
-            const selectedDate = new Date(value);
-            const minDate = new Date('1940-01-01');
-            const maxDate = new Date();
 
-            if (selectedDate < minDate) {
-                setFormData(prevData => ({ ...prevData, [name]: '' })); // Clear value
-                setErrors(prevErrors => ({ ...prevErrors, UserDOB: 'Date of birth cannot be before 1900.' }));
-            } else if (selectedDate > maxDate) {
-                setFormData(prevData => ({ ...prevData, [name]: '' })); // Clear value
-                setErrors(prevErrors => ({ ...prevErrors, UserDOB: 'Date of birth cannot be in the future.' }));
-            } else {
-                setFormData(prevData => ({ ...prevData, [name]: value }));
-                setErrors(prevErrors => ({ ...prevErrors, UserDOB: undefined }));
-            }
-        }
 
         // No restrictions for UserName, UserFamilyName, and UserAddress
         else if (name === 'UserName' || name === 'UserFamilyName' || name === 'UserAddress') {
@@ -132,6 +117,32 @@ function UpdateMember() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        const selectedDate = new Date(formData.UserDOB);
+        const minDate = new Date('1940-01-01');
+        const maxDate = new Date();
+
+        // Initialize an array to collect error messages
+        const errors: string[] = [];
+
+        // Validate DOB
+        if (selectedDate < minDate) {
+            errors.push('Date of birth cannot be before 1940.');
+        }
+        if (selectedDate > maxDate) {
+            errors.push('Date of birth cannot be in the future.');
+        }
+
+        // If there are validation errors, show alert and return
+        if (errors.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: errors.join(' '), 
+                confirmButtonText: 'OK',
+            });
+            return; // Stop further execution
+        }
+
         const dataToSend = new FormData();
 
         // Append the profile image if it exists
@@ -148,7 +159,7 @@ function UpdateMember() {
             { token, id, data: dataToSend },
             {
                 onSuccess() {
-                    navigate(`/dashboard/account/profile/${id}`, { replace: true });
+                    navigate(`/dashboard/account/profile/${id}`,);
                 },
                 onError(error) {
                     Swal.fire({
@@ -240,7 +251,7 @@ function UpdateMember() {
                         </div>
 
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name <span className='text-red-500'>*</span></label>
                             <input
                                 type="text"
                                 id="UserName"
@@ -253,7 +264,7 @@ function UpdateMember() {
                         </div>
 
                         <div>
-                            <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name</label>
+                            <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name <span className='text-red-500'>*</span></label>
                             <input
                                 type="text"
                                 id="UserFamilyName"
@@ -267,7 +278,7 @@ function UpdateMember() {
 
                         <div className="flex space-x-4">
                             <div className="flex-1">
-                                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender <span className='text-red-500'>*</span></label>
                                 <select
                                     id="UserGender"
                                     name="UserGender"
@@ -283,7 +294,7 @@ function UpdateMember() {
                                 </select>
                             </div>
                             <div className="flex-1">
-                                <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                                <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status <span className='text-red-500'>*</span></label>
                                 <select
                                     id="UserMaritalStatus"
                                     name="UserMaritalStatus"
@@ -302,7 +313,7 @@ function UpdateMember() {
                         </div>
 
                         <div>
-                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth <span className='text-red-500'>*</span></label>
                             <input
                                 type="date"
                                 id="UserDOB"
@@ -316,7 +327,6 @@ function UpdateMember() {
                         </div>
 
 
-
                         <div>
                             <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
                             <input
@@ -326,7 +336,6 @@ function UpdateMember() {
                                 value={formData.UserPhone}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
                         </div>
 
@@ -337,10 +346,9 @@ function UpdateMember() {
                                 id="UserEmail"
                                 name="UserEmail"
                                 value={formData.UserEmail}
-                                disabled
+                                disabled={member?.UserType === "Pastor" || member?.UserType === "Exco"}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
                         </div>
 
@@ -353,7 +361,6 @@ function UpdateMember() {
                                 onChange={handleChange}
                                 rows={3}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             ></textarea>
                         </div>
 
@@ -361,7 +368,7 @@ function UpdateMember() {
                             <>
                                 <div>
                                     <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                        User Type
+                                        User Type <span className='text-red-500'>*</span>
                                     </label>
                                     <select
                                         id="UserType"
@@ -401,7 +408,7 @@ function UpdateMember() {
                             <>
                                 <div>
                                     <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Status
+                                        Status <span className='text-red-500'>*</span>
                                     </label>
                                     <select
                                         id="UserStatus"
@@ -415,7 +422,7 @@ function UpdateMember() {
                                         <option value="Active">Active</option>
                                         <option value="Inactive">Inactive</option>
                                         <option value="Lost">Lost</option>
-                                        <option value="NeedVisting">NeedVisting</option>
+                                        <option value="NeedVisting">NeedVisiting</option>
                                         <option value="NeedAttention">NeedAttention</option>
                                     </select>
                                 </div>
@@ -460,7 +467,6 @@ function UpdateMember() {
                                 onChange={handleChange}
 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
                             />
                         </div>
 

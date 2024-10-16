@@ -24,7 +24,9 @@ function UserProfile() {
 
     const handleEdit = () => {
         const userIdString = String(userId);
-        navigate(`/dashboard/member/edit-member/${userIdString}`);
+        navigate(`/dashboard/member/edit-member/${userIdString}`, {
+            state: { from: window.location.pathname } // Pass the current profile route
+        });
     };
 
     useEffect(() => {
@@ -51,7 +53,14 @@ function UserProfile() {
                 if (userId) {
                     deleteMember({ id: Number(userId), token });
                     Swal.fire('Deleted!', 'The account has been deleted.', 'success').then(() => {
-                        navigate(-1); // Redirect after deletion
+                        const previousRoute = location.state?.from;
+                        if (previousRoute && previousRoute.includes('/dashboard/member/edit-member')) {
+                            navigate('/dashboard/account', { replace: true }); // Redirect to members list
+                        } else if (previousRoute) {
+                            navigate(previousRoute); // Navigate back to the previous page
+                        } else {
+                            navigate('/dashboard/account', { replace: true }); // Default redirect
+                        }
                     });
                 }
             } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -196,14 +205,18 @@ function UserProfile() {
                         {/* Address */}
                         <div className="mb-6">
                             <p className="text-gray-500 text-sm">Address</p>
-                            {user?.UserAddress
-                                .split('\r') // Split only by carriage return
-                                .map((line: string, index: number) => (
-                                    <p key={index} className="font-semibold">{line.trim()}</p>
-                                ))}
+                            {user?.UserAddress ? (
+                                user.UserAddress
+                                    .split('\r') // Split only by carriage return
+                                    .map((line: string, index: number) => (
+                                        <p key={index} className="font-semibold">{line.trim()}</p>
+                                    ))
+                            ) : (
+                                <p className="font-semibold">No address provided</p>
+                            )}
                         </div>
-
                         {/* Buttons */}
+
                         <div className="flex sm:flex-row gap-4 mb-4 mt-4">
                             {userType === "Admin" && user?.id !== currentUserId && ( // Check if user is Admin and not viewing their own account
                                 <button

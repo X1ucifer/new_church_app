@@ -82,7 +82,7 @@ export default function NewEvent({ onClose }: any) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg shadow-lg">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-full">
                 <div className="flex justify-between items-center p-4 border-b">
-                    <h2 className="text-lg font-semibold">New Event</h2>
+                    <h2 className="text-lg font-semibold">New Event </h2>
                     <button onClick={onClose}
                         className="text-gray-500 hover:text-gray-700">
                         <X className="h-6 w-6" />
@@ -91,7 +91,7 @@ export default function NewEvent({ onClose }: any) {
                 <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
                     <div>
                         <label htmlFor="eventName" className="block text-sm font-medium text-gray-700 mb-1">
-                            Event Name
+                            Event Name <span className='text-red-500'>*</span>
                         </label>
                         <input
                             type="text"
@@ -106,7 +106,7 @@ export default function NewEvent({ onClose }: any) {
                     </div>
                     <div>
                         <label htmlFor="eventType" className="block text-sm font-medium text-gray-700 mb-1">
-                            Event Type
+                            Event Type <span className='text-red-500'>*</span>
                         </label>
                         <div className="relative">
                             <select
@@ -131,7 +131,7 @@ export default function NewEvent({ onClose }: any) {
                     </div>
                     <div>
                         <label htmlFor="leader" className="block text-sm font-medium text-gray-700 mb-1">
-                            Leader
+                            Leader <span className='text-red-500'>*</span>
                         </label>
                         <input
                             type="text"
@@ -148,7 +148,7 @@ export default function NewEvent({ onClose }: any) {
                     <div className="flex space-x-4">
                         <div className="flex-1">
                             <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
-                                Time
+                                Time <span className='text-red-500'>*</span>
                             </label>
                             <div className="relative">
                                 <select
@@ -172,7 +172,7 @@ export default function NewEvent({ onClose }: any) {
 
                         <div className="flex-1">
                             <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                                Date
+                                Date <span className='text-red-500'>*</span>
                             </label>
                             <div className="relative">
                                 <input
@@ -215,7 +215,7 @@ export default function NewEvent({ onClose }: any) {
                         )}
                     </div> */}
                     <div>
-                        <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
+                        <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name <span className='text-red-500'>*</span>
                         </label>
                         <input
                             type="text"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Search, Plus } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom'; // Use react-router-dom for navigation
+import { Link, useNavigate } from 'react-router-dom'; 
 import { useFilterMembers } from '../../../../hooks/useEvents';
 import Skeleton from 'react-loading-skeleton';
 import withAuth from '../../../../app/authCheck';
@@ -8,12 +8,18 @@ import { DesktopHeader } from '../../../../components/partials/desktopHeader';
 
 function StationMembersData() {
     const [searchTerm, setSearchTerm] = useState('');
-
-    const navigate = useNavigate(); // Use useNavigate from react-router-dom
+    const navigate = useNavigate();
     const token = localStorage.getItem('token') || '';
 
     const [currentPage, setCurrentPage] = useState(1);
-    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Outstation Member", currentPage);
+    
+    // Include searchTerm in the hook
+    const handleSearch = (e:any)=>{
+        setSearchTerm(e.target.value)
+        setCurrentPage(1);
+    }
+    
+    const { data: membersData, isLoading: filterLoading } = useFilterMembers(token, "Outstation Member", currentPage, searchTerm);
 
     const members = membersData?.data || [];
     const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
@@ -28,9 +34,11 @@ function StationMembersData() {
         if (currentPage > 1) {
             setCurrentPage(prevPage => prevPage - 1);
         }
-    };
+    }
+
     const skeletonRows = Array(5).fill(null);
 
+    // Filter members based on the search term
     const filteredMembers = members?.filter((member: any) =>
         member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,7 +82,7 @@ function StationMembersData() {
                                 placeholder="Search Name"
                                 className="w-full pl-10 pr-4 py-2 border rounded-md"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={handleSearch}
                             />
                             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                         </div>
@@ -114,7 +122,6 @@ function StationMembersData() {
                                                 onClick={() => navigate(`/dashboard/account/profile/${member.id}`)}
                                             >
                                                 <td className="px-4 py-2">{(currentPage - 1) * pagination.per_page + index + 1}</td>
-
                                                 <td className="px-4 py-2">
                                                     {splitIntoChunks(member.UserFamilyName, 15).map((chunk: string, i: number) => (
                                                         <p key={i}>{chunk}</p>
@@ -134,8 +141,6 @@ function StationMembersData() {
                                             </td>
                                         </tr>
                                     )
-
-
                                 )}
                             </tbody>
                         </table>
@@ -164,7 +169,6 @@ function StationMembersData() {
                 </div>
             </div>
         </>
-
     )
 }
 

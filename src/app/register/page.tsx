@@ -15,12 +15,26 @@ const schema = z.object({
     UserGender: z.string().min(1, 'Gender is required'),
     UserMaritalStatus: z.string().min(1, 'Marital Status is required'),
     UserDOB: z.string().min(1, 'Date of Birth is required'),
-    UserPhone: z.string().min(1, 'Phone number is required'),
+    UserPhone: z.string().optional(),
     UserEmail: z.string().email('Email is required'),
-    UserAddress: z.string().min(1, 'Address is required'),
-    UserChurchName: z.string().min(1, 'Pastoral Church Name is required'),
+    UserAddress: z.string().optional(),
+    UserChurchName: z.string().optional(),
     UserType: z.string().min(1, 'User Type is required'),
 });
+
+// const schema = z.object({
+//     UserName: z.string().optional(),
+//     UserFamilyName: z.string().optional(),
+//     UserGender: z.string().optional(),
+//     UserMaritalStatus: z.string().optional(),
+//     UserDOB: z.string().optional(),
+//     UserPhone: z.string().optional(),
+//     UserEmail: z.string().email('Email is required'),
+//     UserAddress: z.string().optional(),
+//     UserChurchName: z.string().optional(),
+//     UserType: z.string().optional(),
+// });
+
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -212,7 +226,7 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name <span className='text-red-500'>*</span></label>
                             <input
                                 type="text"
                                 id="UserName"
@@ -225,7 +239,7 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name</label>
+                            <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name <span className='text-red-500'>*</span></label>
                             <input
                                 type="text"
                                 id="UserFamilyName"
@@ -240,7 +254,7 @@ export default function Register() {
 
                         <div className="flex space-x-4">
                             <div className="flex-1">
-                                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender <span className='text-red-500'>*</span></label>
                                 <select
                                     id="UserGender"
                                     {...register('UserGender')}
@@ -256,7 +270,7 @@ export default function Register() {
                                 )}
                             </div>
                             <div className="flex-1">
-                                <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                                <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status <span className='text-red-500'>*</span></label>
                                 <select
                                     id="UserMaritalStatus"
                                     {...register('UserMaritalStatus')}
@@ -275,7 +289,7 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth <span className='text-red-500'>*</span></label>
                             <input
                                 type="date"
                                 id="UserDOB"
@@ -326,7 +340,7 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="emailId" className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
+                            <label htmlFor="emailId" className="block text-sm font-medium text-gray-700 mb-1">Email ID <span className='text-red-500'>*</span></label>
                             <input
                                 type="email"
                                 id="UserEmail"
@@ -367,7 +381,7 @@ export default function Register() {
 
                         <div>
                             <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                Register as
+                                Register as <span className='text-red-500'>*</span>
                             </label>
                             <select
                                 id="UserType"

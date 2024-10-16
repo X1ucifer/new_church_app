@@ -74,8 +74,15 @@ const Attendance: React.FC<any> = () => {
     const { data: attendance } = useAddendance(token, userId);
     const [isPageLoading, setIsPageLoading] = useState(false);
 
+   
     const [currentPage, setCurrentPage] = useState(1);
-    const { data: membersData, isLoading } = useFilterMembers(token, activeTab, currentPage, userId);
+
+    const handleSearch = (e:any)=>{
+        setSearchTerm(e.target.value)
+        setCurrentPage(1);
+    }
+
+    const { data: membersData, isLoading } = useFilterMembers(token, activeTab, currentPage,searchTerm, userId);
 
     const members = membersData?.data || [];
     const pagination = membersData?.pagination || { current_page: 1, last_page: 1 };
@@ -120,7 +127,7 @@ const Attendance: React.FC<any> = () => {
     useEffect(() => {
         if (members) {
             const initiallySelected = members
-                .filter((member: any) => member.isMarked === "1")
+                .filter((member: any) => member.isMarked == "1")
                 .map((member: any) => member.id);
             setSelectedMembers(initiallySelected);
         }
@@ -229,48 +236,11 @@ const Attendance: React.FC<any> = () => {
     };
 
 
-
-
-    // const handleSubmitAttendance = async () => {
-    //     if (selectedMembers.length === 0) {
-    //         Swal.fire({
-    //             icon: 'error',
-    //             title: 'Please select users',
-    //             confirmButtonText: 'OK',
-    //         });
-    //         return;
-    //     }
-    //     try {
-    //         const data = {
-    //             UserType: activeTab,
-    //             users: selectedMembers,
-    //         };
-
-    //         console.log("ioo", data)
-    //         await updateAttendance(token, userId, data);
-    //         Swal.fire({
-    //             icon: 'success',
-    //             title: 'Successful',
-    //             text: 'Attendance added!',
-    //             confirmButtonText: 'OK',
-    //         });
-    //     } catch (error) {
-    //         console.error('Error submitting attendance:', error);
-    //         Swal.fire({
-    //             icon: 'error',
-    //             title: 'An error occurred',
-    //             text: 'Please try again later.',
-    //             confirmButtonText: 'OK',
-    //         });
-    //     }
-    // };
-
-    const filteredMembers = members?.filter(
-        (member: Member) =>
-            member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredMembers = members?.filter((member: any) =>
+        member.UserFamilyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.UserName.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
-
+    
     const handleChange = (e: any) => {
         setFormData({
             ...formData,
@@ -357,7 +327,7 @@ const Attendance: React.FC<any> = () => {
                     {['Member', 'Friend', 'Outstation Member'].map((tab) => (
                         <button
                             key={tab}
-                            className={`flex-1 py-2 px-4 text-center ${activeTab === tab
+                            className={`flex-1 py-2 px-4 text-center ${activeTab == tab
                                 ? 'text-blue-500 border-b-2 border-blue-500 font-medium'
                                 : 'text-gray-500'
                                 }`}
@@ -376,7 +346,7 @@ const Attendance: React.FC<any> = () => {
                             placeholder="Search Name"
                             className="w-full pl-10 pr-4 py-2 border rounded-md"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={handleSearch}
                         />
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
@@ -432,9 +402,9 @@ const Attendance: React.FC<any> = () => {
                         {/* Pagination Controls */}
                         <div className="flex justify-between mt-4">
                             <button
-                                disabled={currentPage === 1 || isPageLoading}
+                                disabled={currentPage == 1 || isPageLoading}
                                 onClick={handlePrevPage}
-                                className={`px-4 py-2 ${currentPage === 1 || isPageLoading ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                                className={`px-4 py-2 ${currentPage == 1 || isPageLoading ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
                             >
                                 Previous
                             </button>
@@ -442,9 +412,9 @@ const Attendance: React.FC<any> = () => {
                             <span className="px-4 py-2">Page {pagination.current_page} of {pagination.last_page}</span>
 
                             <button
-                                disabled={currentPage === pagination.last_page || isPageLoading}
+                                disabled={currentPage == pagination.last_page || isPageLoading}
                                 onClick={handleNextPage}
-                                className={`px-4 py-2 ${currentPage === pagination.last_page || isPageLoading ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                                className={`px-4 py-2 ${currentPage == pagination.last_page || isPageLoading ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
                             >
                                 Next
                             </button>

@@ -31,6 +31,11 @@ function ReportUsers() {
 
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
 
+    const handleSearch = (e:any)=>{
+        setSearchTerm(e.target.value)
+        setCurrentPage(1);
+    }
+
     const fetchReportDetails = async (page = 1, searchTerm = '') => {
         if (!slug) return; // Exit if slug is not available
 
@@ -73,7 +78,7 @@ function ReportUsers() {
     const handleExport = async () => {
         try {
             // Call the report export function to fetch the CSV
-            const response = await reportExport(accessToken, slug);
+            const response = await reportExport(accessToken, slug, searchTerm);
 
             // Assuming the response contains the CSV data directly as text or Blob
             const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
@@ -132,7 +137,7 @@ function ReportUsers() {
                     placeholder="Search users..."
                     className="p-2 border rounded w-full mb-4"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)} // Update search term on change
+                    onChange={handleSearch} // Update search term on change
                 />
 
 

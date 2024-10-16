@@ -52,7 +52,7 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
 
                     if (data) {
                         setUserType(parsedData.user.UserType);
-                        const userRights = data.find((right: any) => right.user_type === parsedData.user.UserType);
+                        const userRights = data.find((right: any) => right.user_type == parsedData.user.UserType);
                         if (userRights) {
                             setAccessRights(userRights);
                         }
@@ -87,11 +87,11 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                     ))
                 ) : (
                     <>
-                        {accessRights.dashboard === '1' && (
+                        {accessRights.dashboard == '1' && (
                             <li>
                                 <Link to="/dashboard">
                                     <button
-                                        className={`flex flex-col items-center ${activeTab === 'Home' ? 'text-blue-600' : 'text-gray-600'}`}
+                                        className={`flex flex-col items-center ${activeTab == 'Home' ? 'text-blue-600' : 'text-gray-600'}`}
                                         onClick={() => setActiveTab('Home')}
                                     >
                                         <Home className="h-6 w-6" />
@@ -100,11 +100,11 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                                 </Link>
                             </li>
                         )}
-                        {accessRights.report === '1' && (
+                        {accessRights.report == '1' && (
                             <li>
                                 <Link to="/dashboard/reports">
                                     <button
-                                        className={`flex flex-col items-center ${activeTab === 'Report' ? 'text-blue-600' : 'text-gray-600'}`}
+                                        className={`flex flex-col items-center ${activeTab == 'Report' ? 'text-blue-600' : 'text-gray-600'}`}
                                         onClick={() => setActiveTab('Report')}
                                     >
                                         <FileText className="h-6 w-6" />
@@ -113,11 +113,11 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                                 </Link>
                             </li>
                         )}
-                        {accessRights.events === '1' && (
+                        {accessRights.events == '1' && (
                             <li>
                                 <Link to="/dashboard/events">
                                     <button
-                                        className={`flex flex-col items-center ${activeTab === 'Events' ? 'text-blue-600' : 'text-gray-600'}`}
+                                        className={`flex flex-col items-center ${activeTab == 'Events' ? 'text-blue-600' : 'text-gray-600'}`}
                                         onClick={() => setActiveTab('Events')}
                                     >
                                         <Calendar className="h-6 w-6" />
@@ -126,11 +126,11 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                                 </Link>
                             </li>
                         )}
-                        {accessRights.settings === '1' ? (
+                        {accessRights.settings == '1' ? (
                             <li>
                                 <Link to="/dashboard/account">
                                     <button
-                                        className={`flex flex-col items-center ${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'}`}
+                                        className={`flex flex-col items-center ${activeTab == 'Account' ? 'text-blue-600' : 'text-gray-600'}`}
                                         onClick={() => setActiveTab('Account')}
                                     >
                                         <User className="h-6 w-6" />
@@ -142,7 +142,7 @@ export function MobileHeader({ activeTab, setActiveTab }: IAppProps) {
                             : (
                                 <>
                                     <button
-                                        className={`flex flex-col items-center ${activeTab === 'Account' ? 'text-blue-600' : 'text-gray-600'}`}
+                                        className={`flex flex-col items-center ${activeTab == 'Account' ? 'text-blue-600' : 'text-gray-600'}`}
                                         onClick={logout}
                                     >
                                         <LogOut className="h-6 w-6" />

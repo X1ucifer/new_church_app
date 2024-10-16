@@ -6,9 +6,10 @@ import { DesktopHeader } from '../../../components/partials/desktopHeader';
 import { MobileHeader } from '../../../components/partials/mobileHeader';
 import { Link, useNavigate } from 'react-router-dom';
 import withAuth from '../../../app/authCheck';
-import { membersImport } from '../../../utils/api';
+import { getSampleCSV, membersImport } from '../../../utils/api';
 import Swal from 'sweetalert2';
-
+import { ArrowLeft, Download } from 'lucide-react';
+import Tippy from '@tippyjs/react';
 // const userData = typeof window !== 'undefined' ? localStorage.getItem('user') || '' : '';
 // const parsedData = userData ? JSON.parse(userData) : null;
 // const userId = parsedData?.user.id;
@@ -103,7 +104,11 @@ function AccountSettings() {
 
             setIsModalOpen(false); // Close modal on success
         } catch (error: any) {
-            alert(error.message);
+            Swal.fire({
+                icon: 'error',
+                title: `${error}`,
+                confirmButtonText: 'OK',
+            });
         } finally {
             setIsUploading(false); // Hide spinner once upload is done
         }
@@ -142,13 +147,53 @@ function AccountSettings() {
                     {isModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                             <div className="bg-white rounded-lg p-6 w-96">
-                                <h2 className="text-lg font-semibold mb-4">Upload Members File</h2>
+                                <div className="flex justify-between">
+                                    <h2 className="text-lg font-semibold mb-4">Upload Members File</h2>
+                                    <div className="relative group">  {/* Add 'group' class to parent */}
+                                        {/* <Tippy content="Download Sample CSV" placement="top" arrow={true}>
+                                            <Download
+                                                className="h-6 w-6 text-blue-400 cursor-pointer"
+                                                onClick={async () => {
+                                                    try {
+                                                        await getSampleCSV(); // Call the download function
+                                                    } catch (error: any) {
+                                                        console.error('Failed to download CSV', error.message);
+                                                    }
+                                                }}
+                                            />
+                                        </Tippy> */}
+
+                                        <Tippy content="Download Sample CSV" placement="top" arrow={true}>
+                                            <Download
+                                                className="h-6 w-6 text-blue-400 cursor-pointer"
+                                                onClick={() => {
+                                                    try {
+                                                        // Create a temporary anchor element
+                                                        const link = document.createElement('a');
+                                                        link.href = 'https://tjc.wizappsystem.com/church/template.xlsx'; // URL to download
+                                                        link.setAttribute('download', 'template.xlsx'); // Set download attribute
+                                                        document.body.appendChild(link); // Append the link to the document
+                                                        link.click(); // Programmatically click the link to trigger the download
+                                                        document.body.removeChild(link); // Clean up by removing the link
+                                                    } catch (error: any) {
+                                                        console.error('Failed to download CSV', error.message);
+                                                    }
+                                                }}
+                                            />
+                                        </Tippy>
+
+                                    </div>
+                                </div>
+
+
+
                                 <input
                                     type="file"
                                     accept=".xlsx, .xls, .csv"
                                     onChange={handleFileChange}
                                     className="mb-4"
                                 />
+
 
                                 <div className="flex justify-end">
                                     <button

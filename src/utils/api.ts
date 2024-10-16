@@ -354,7 +354,7 @@ export const deleteEvent = async (token: string, id: number) => {
     }
 };
 
-export const filterMembers = async (token: string, filter_type: string, page: number, id?: any) => {
+export const filterMembers = async (token: string, filter_type: string, page: number, search: string, id?: any) => {
     try {
         const url = id ? `/user/filterByType/${id}` : `/user/filterByType`;
         const response = await api.get(url, {
@@ -364,6 +364,7 @@ export const filterMembers = async (token: string, filter_type: string, page: nu
             params: {
                 filter_type: filter_type,
                 page: page,  // Pass the page number
+                search: search, // Add the search parameter
             },
         });
         console.log("API Response:", response.data);
@@ -378,6 +379,7 @@ export const filterMembers = async (token: string, filter_type: string, page: nu
         }
     }
 };
+
 
 
 export const getGroups = async (token: string) => {
@@ -663,15 +665,23 @@ export const membersImport = async (token?: string, file?: File) => {
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError) {
+            if (error.response?.status === 500) {
+                throw new Error(
+                    error.response?.data?.message ||
+                    'An error occurred during import. Please check the sheet and try again.'
+                );
+            }
+
             throw new Error(
-                error.response?.data?.message || 'Failed to upload members data. Please try again.'
+                error.response?.data?.messages?.incomplete ||
+                error.response?.data?.messages?.duplicate ||
+                'Failed to upload members data. Please try again.'
             );
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
         }
     }
 };
-
 
 export const reportUsers = async (token: string, report_type: string, page: number, search: string) => {
     try {
@@ -699,7 +709,7 @@ export const reportUsers = async (token: string, report_type: string, page: numb
 };
 
 
-export const reportExport = async (token?: string, report_type?: string) => {
+export const reportExport = async (token?: string, report_type?: string, searchTerm?: any) => {
     try {
         const response = await api.get('/reportExcelDownload', {
             headers: {
@@ -707,6 +717,7 @@ export const reportExport = async (token?: string, report_type?: string) => {
             },
             params: {
                 report_type,
+                search: searchTerm,
             },
         });
 
@@ -721,5 +732,35 @@ export const reportExport = async (token?: string, report_type?: string) => {
         }
     }
 };
+
+export const getSampleCSV = async () => {
+    try {
+        const response = await api.get('/templateDownload', {
+            responseType: 'blob', // Important for downloading files
+        });
+
+        // Create a Blob from the response
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+
+        // Create a link element, set the URL, and download
+        const link: any = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'Sample_Members.csv'); // Define the file name
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link); // Clean up
+
+        return response;
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to get CSV. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
 
 export default api;

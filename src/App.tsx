@@ -27,6 +27,7 @@ import AddFriend from './app/dashboard/events/attendance/add-friends/page';
 import ReportUsers from './app/dashboard/reports/report-users/page';
 import Families from './app/dashboard/reports/families/page';
 import MemberAdd from './app/dashboard/account/members/add-member/page';
+import 'tippy.js/dist/tippy.css';
 
 const App: React.FC = () => {
 const AuthenticatedDashboard = withAuth(Dashboardpage);

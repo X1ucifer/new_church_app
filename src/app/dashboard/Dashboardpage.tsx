@@ -6,8 +6,9 @@ import { DesktopHeader } from '../../components/partials/desktopHeader';
 import { MobileHeader } from '../../components/partials/mobileHeader';
 import { useDashboard } from '../../hooks/useDashboard';
 import { getRights } from '../../utils/api';
-import Lottie  from 'lottie-react';
+import Lottie from 'lottie-react';
 import emptyAnimation from '../../animation/empty.json';
+import { ArrowLeft, Download } from 'lucide-react';
 
 const ChurchDemographics = () => {
     const [activeTab, setActiveTab] = useState('Home');
@@ -32,11 +33,11 @@ const ChurchDemographics = () => {
                             setAccessRights(userRights);
 
                             // Check if the user has access to the dashboard
-                            if (userRights.dashboard === '0') {
+                            if (userRights.dashboard == '0') {
                                 // Redirect if no access to the dashboard
-                                if (userRights.report === '1') {
+                                if (userRights.report == '1') {
                                     navigate('/dashboard/reports');
-                                } else if (userRights.events === '1') {
+                                } else if (userRights.events == '1') {
                                     navigate('/dashboard/events');
                                 } else {
                                     navigate('/login');  // Redirect to login if no access to any features
@@ -151,15 +152,21 @@ const ChurchDemographics = () => {
                 <h2 className="text-md font-medium mb-2">Total Values</h2>
                 <div className="bg-[#E1E1E1] rounded-lg shadow p-4 mb-4">
                     <div className="grid grid-cols-2 gap-4">
-                        {isData?.totalValues.map((item: any, index: number) => (
-                            <Link to={`/dashboard/report-users/${item.name}`} key={index}>
-                                <div className="md:flex">
-                                    <span className="text-gray-600">{item.label}</span>
-                                    <br />
-                                    <span className="text-[#0065FF] md:ml-[10px] font-semibold">{item.value}</span>
-                                </div>
-                            </Link>
-                        ))}
+                        {isData?.totalValues.map((item: any, index: number) => {
+                            // Define the route based on the item name
+                            const route = item.name === "Friend" ? `/dashboard/account/friend` : `/dashboard/report-users/${item.name}`;
+
+                            return (
+                                <Link to={route} state={item.reportname} key={index}>
+                                    <div className="md:flex">
+                                        <span className="text-gray-600">{item.label}</span>
+                                        <br />
+                                        <span className="text-[#0065FF] md:ml-[10px] font-semibold">{item.value}</span>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+
                     </div>
                 </div>
 

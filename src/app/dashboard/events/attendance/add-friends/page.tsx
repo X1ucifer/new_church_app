@@ -11,30 +11,57 @@ import { DesktopHeader } from '../../../../../components/partials/desktopHeader'
 import withAuth from '../../../../../app/authCheck';
 import { useLocation } from 'react-router-dom';
 
+// const userSchema = z.object({
+//     UserName: z
+//         .string()
+//         .min(1, 'Name is required'),
+//     UserFamilyName: z
+//         .string()
+//         .min(1, 'Family Name is required'),
+//     UserGender: z.string().min(1, 'Gender is required'),
+//     UserMaritalStatus: z.string().min(1, 'Marital status is required'),
+//     UserDOB: z.string().refine((val) => !!val, {
+//         message: 'Date of Birth is required',
+//     }),
+
+//     UserPhone: z
+//         .string()
+//         .min(1, "Phone number is required"),
+
+//     UserEmail: z.string().email('Email is required'),
+//     UserAddress: z.string().min(1, 'Address is required'),
+//     UserType: z.string().min(1, 'Type is required'),
+//     UserGroupID: z.string().optional(),
+//     UserStatus: z.string().min(1, 'User status is required'),
+//     UserChurchName: z.string().min(1, 'Pastoral Church Name is required'),
+// });
+
 const userSchema = z.object({
-    UserName: z
-        .string()
-        .min(1, 'Name is required'),
-    UserFamilyName: z
-        .string()
-        .min(1, 'Family Name is required'),
+    UserName: z.string().min(1, 'Name is required'),
+    UserFamilyName: z.string().min(1, 'Family Name is required'),
     UserGender: z.string().min(1, 'Gender is required'),
     UserMaritalStatus: z.string().min(1, 'Marital status is required'),
     UserDOB: z.string().refine((val) => !!val, {
         message: 'Date of Birth is required',
     }),
-
-    UserPhone: z
-        .string()
-        .min(1, "Phone number is required"),
-
-    UserEmail: z.string().email('Email is required'),
-    UserAddress: z.string().min(1, 'Address is required'),
-    UserType: z.string().min(1, 'Type is required'),
+    UserPhone: z.string().optional(),
+    UserEmail: z.string().optional(),
+    UserAddress: z.string().optional(),
+    UserStatus: z.string().min(1, 'Status is required'),
+    UserType: z.string().min(1, 'User Type is required'),
     UserGroupID: z.string().optional(),
-    UserStatus: z.string().min(1, 'User status is required'),
-    UserChurchName: z.string().min(1, 'Pastoral Church Name is required'),
+    UserChurchName: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if ((data.UserType === 'Pastor' || data.UserType === 'Exco') && !data.UserEmail) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Email is required for Pastor or Exco',
+            path: ['UserEmail'],
+        });
+    }
 });
+
+
 function AddFriend() {
 
     const [formData, setFormData] = useState({
@@ -137,7 +164,7 @@ function AddFriend() {
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name <span className='text-red-500'>*</span></label>
                                 <input
                                     type="text"
                                     id="UserName"
@@ -151,7 +178,7 @@ function AddFriend() {
                             </div>
 
                             <div>
-                                <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name</label>
+                                <label htmlFor="familyName" className="block text-sm font-medium text-gray-700 mb-1">Family Name <span className='text-red-500'>*</span></label>
                                 <input
                                     type="text"
                                     id="UserFamilyName"
@@ -166,7 +193,7 @@ function AddFriend() {
 
                             <div className="flex space-x-4">
                                 <div className="flex-1">
-                                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender <span className='text-red-500'>*</span></label>
                                     <select
                                         id="UserGender"
                                         {...register('UserGender')}
@@ -183,7 +210,7 @@ function AddFriend() {
                                 </div>
 
                                 <div className="flex-1">
-                                    <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                                    <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-700 mb-1">Marital Status <span className='text-red-500'>*</span></label>
                                     <select
                                         id="UserMaritalStatus"
                                         {...register('UserMaritalStatus')}
@@ -204,7 +231,7 @@ function AddFriend() {
                             </div>
 
                             <div>
-                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth <span className='text-red-500'>*</span></label>
                                 <input
                                     type="date"
                                     id="UserDOB"
@@ -234,7 +261,7 @@ function AddFriend() {
                             </div>
 
                             <div>
-                                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number </label>
                                 <input
                                     type="tel"
                                     id="UserPhone"
@@ -268,7 +295,7 @@ function AddFriend() {
                             </div>
 
                             <div>
-                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address </label>
                                 <textarea
                                     id="UserAddress"
                                     {...register('UserAddress')}
@@ -310,7 +337,7 @@ function AddFriend() {
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Type
+                                    Type <span className='text-red-500'>*</span>
                                 </label>
                                 <select
                                     id="UserType"
@@ -329,7 +356,7 @@ function AddFriend() {
 
                             <div>
                                 <label htmlFor="pastoralChurchName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Status
+                                    Status <span className='text-red-500'>*</span>
                                 </label>
                                 <select
                                     id="UserStatus"
@@ -340,7 +367,7 @@ function AddFriend() {
                                     <option value="Active">Active</option>
                                     <option value="Inactive">Inactive</option>
                                     <option value="Lost">Lost</option>
-                                    <option value="NeedVisting">NeedVisting</option>
+                                    <option value="NeedVisting">NeedVisiting</option>
                                     <option value="NeedAttention">NeedAttention</option>
                                 </select>
                             </div>
@@ -350,7 +377,7 @@ function AddFriend() {
 
 
                             <div>
-                                <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name
+                                <label htmlFor="churchName" className="block text-sm font-medium text-gray-700 mb-1">Pastoral Church Name 
                                 </label>
                                 <input
                                     type="text"

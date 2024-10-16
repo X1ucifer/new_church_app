@@ -62,10 +62,10 @@ function UsageRights() {
 
                 if (Object.keys(rightsByType).length > 0) {
                     setAccessRights([
-                        { id: 1, name: 'Dashboard', localPastor: rightsByType['Pastor']?.dashboard === '1', localExec: rightsByType['Exco']?.dashboard === '1' },
-                        { id: 2, name: 'Report', localPastor: rightsByType['Pastor']?.report === '1', localExec: rightsByType['Exco']?.report === '1' },
-                        { id: 3, name: 'Events', localPastor: rightsByType['Pastor']?.events === '1', localExec: rightsByType['Exco']?.events === '1' },
-                        { id: 4, name: 'Settings', localPastor: rightsByType['Pastor']?.settings === '1', localExec: rightsByType['Exco']?.settings === '1' },
+                        { id: 1, name: 'Dashboard', localPastor: rightsByType['Pastor']?.dashboard == '1', localExec: rightsByType['Exco']?.dashboard == '1' },
+                        { id: 2, name: 'Report', localPastor: rightsByType['Pastor']?.report == '1', localExec: rightsByType['Exco']?.report == '1' },
+                        { id: 3, name: 'Events', localPastor: rightsByType['Pastor']?.events == '1', localExec: rightsByType['Exco']?.events == '1' },
+                        { id: 4, name: 'Settings', localPastor: rightsByType['Pastor']?.settings == '1', localExec: rightsByType['Exco']?.settings == '1' },
                     ]);
                 } else {
                     console.warn('No rights found for relevant user types');
@@ -81,7 +81,7 @@ function UsageRights() {
     const handleCheckboxChange = (id: number, role: 'localPastor' | 'localExec') => {
         setAccessRights(prevRights =>
             prevRights.map(right =>
-                right.id === id ? { ...right, [role]: !right[role] } : right
+                right.id == id ? { ...right, [role]: !right[role] } : right
             )
         )
     }

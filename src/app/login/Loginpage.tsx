@@ -60,26 +60,72 @@ export default function ChurchLogin() {
         };
 
 
+        // mutate(formattedData, {
+        //     onSuccess: (responseData) => {
+        //         localStorage.setItem('UserEmail', responseData.user.UserEmail);
+
+        //         console.log("data", responseData.user.UserEmailVerified)
+        //         const userData = {
+        //             user: responseData.user,
+        //             token: responseData.accessToken,
+        //         };
+
+        //         dispatch(loginSuccess(userData));
+
+        //         if (responseData.user.UserEmailVerified == "1") {
+        //             navigate('/dashboard');
+
+        //         } else {
+        //             sendOTP.mutate(
+        //                 { UserEmail: responseData.user.UserEmail },
+        //                 {
+        //                     onSuccess: () => {
+        //                         router('/register/verify-otp');
+        //                     },
+        //                     onError: (error: any) => {
+        //                         Swal.fire({
+        //                             icon: 'error',
+        //                             title: 'OTP Sending Failed',
+        //                             text: error?.message || 'Failed to send OTP. Please try again.',
+        //                             confirmButtonText: 'OK',
+        //                         });
+        //                     }
+        //                 }
+        //             );
+        //         }
+
+        //     },
+        //     onError: (error: any) => {
+        //         console.log("d", error)
+        //         if (error.response?.status === 401) {
+        //             setLoginError('Unauthorized access. Please check your credentials.');
+        //         } else {
+        //             setLoginError('Unauthorized access. Please check your credentials.');
+        //         }
+        //     },
+        // });
+
         mutate(formattedData, {
             onSuccess: (responseData) => {
-                localStorage.setItem('UserEmail', responseData.user.UserEmail);
-
-                console.log("data", responseData.user.UserEmailVerified)
-                const userData = {
-                    user: responseData.user,
-                    token: responseData.accessToken,
-                };
-
-                dispatch(loginSuccess(userData));
-
+                // Check if email is verified before storing user data in localStorage
                 if (responseData.user.UserEmailVerified == "1") {
-                    navigate('/dashboard');
+                    localStorage.setItem('UserEmail', responseData.user.UserEmail);
 
+                    const userData = {
+                        user: responseData.user,
+                        token: responseData.accessToken,
+                    };
+
+                    // Dispatch loginSuccess and navigate to dashboard
+                    dispatch(loginSuccess(userData));
+                    navigate('/dashboard');
                 } else {
+                    // Do not store any sensitive information, proceed to OTP verification
                     sendOTP.mutate(
                         { UserEmail: responseData.user.UserEmail },
                         {
                             onSuccess: () => {
+                                localStorage.setItem('UserEmail', responseData.user.UserEmail);
                                 router('/register/verify-otp');
                             },
                             onError: (error: any) => {
@@ -93,17 +139,17 @@ export default function ChurchLogin() {
                         }
                     );
                 }
-
             },
             onError: (error: any) => {
-                console.log("d", error)
+                console.log("Error:", error);
                 if (error.response?.status === 401) {
                     setLoginError('Unauthorized access. Please check your credentials.');
                 } else {
-                    setLoginError('Unauthorized access. Please check your credentials.');
+                    setLoginError('An unexpected error occurred. Please try again.');
                 }
             },
         });
+
     };
 
     return (
@@ -135,7 +181,7 @@ export default function ChurchLogin() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                Email
+                                Email <span className='text-red-500'>*</span>
                             </label>
                             <input
                                 type="text"
@@ -150,7 +196,7 @@ export default function ChurchLogin() {
                         </div>
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                                Password
+                                Password <span className='text-red-500'>*</span>
                             </label>
                             <div className="mt-1 relative">
                                 <input

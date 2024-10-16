@@ -16,8 +16,6 @@ export const useEventDetails = (token: string, id: number) => {
     () => getEvent(token, id),
     {
       enabled: !!id,
-      staleTime: 300000,
-      cacheTime: 600000,
     }
   );
 };
@@ -86,10 +84,10 @@ export const useDeleteEvent = (token: string) => {
   );
 };
 
-export const useFilterMembers = (token: string, filter_type: string, page: number, id?: any) => {
+export const useFilterMembers = (token: string, filter_type: string, page: number, searchTerm: string, id?: any) => {
   return useQuery(
-    ['filteredMembers', filter_type, page],
-    () => filterMembers(token, filter_type, page, id),
+    ['filteredMembers', filter_type, page, searchTerm], // Include searchTerm in the query key
+    () => filterMembers(token, filter_type, page, searchTerm, id), // Pass searchTerm to filterMembers
     {
       keepPreviousData: true, // Ensures the previous data is kept while fetching new data
       cacheTime: 0, // No caching
@@ -98,7 +96,6 @@ export const useFilterMembers = (token: string, filter_type: string, page: numbe
     }
   );
 };
-
 
 
 // export const useFilterMembers = (token: string, filter_type: string, id?: any) => {
