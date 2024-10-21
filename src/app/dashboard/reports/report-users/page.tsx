@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Search } from 'lucide-react';
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import { DesktopHeader } from '../../../../components/partials/desktopHeader'
 import { MobileHeader } from '../../../../components/partials/mobileHeader'
@@ -21,7 +21,7 @@ function ReportUsers() {
 
     const [loading, setLoading] = useState(true);
 
-    const usersPerPage = 10;
+    const usersPerPage = 20;
 
     const { slug } = useParams<{ slug: any }>();
     const location = useLocation();
@@ -31,7 +31,7 @@ function ReportUsers() {
 
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : ''
 
-    const handleSearch = (e:any)=>{
+    const handleSearch = (e: any) => {
         setSearchTerm(e.target.value)
         setCurrentPage(1);
     }
@@ -100,178 +100,136 @@ function ReportUsers() {
 
 
     return (
-        <div className="min-h-screen bg-white flex flex-col text-black">
-            {/* Desktop Header */}
+        <>
             <DesktopHeader activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            {/* Main Content */}
-            <main className="flex-grow container mx-auto p-4 md:p-8">
-                <div className="flex items-center mb-6 justify-between">
-                    <div className='flex'>
+            <div className="min-h-screen bg-white text-black">
+                <div className="max-w-4xl mx-auto bg-white md:shadow-lg">
+                    {/* Header */}
+                    <div className="flex justify-between items-center p-4">
                         <button
                             onClick={() => navigate(-1)}
-                            className="text-gray-600 hover:text-gray-800 mr-4"
+                            className="text-blue-500 hover:text-blue-700 flex items-center"
                         >
-                            <ArrowLeft className="h-6 w-6 text-blue-400" />
+                            <ArrowLeft className="h-5 w-5 mr-4" />
+                            <p className="text-black font-medium">Users for {state}</p>
                         </button>
-                        <h2 className="text-xl font-bold">Users for {state}</h2>
+                        <div>
+                            <button
+                                onClick={handleExport} // Call handleExport on click
+                                className="text-gray-600 hover:text-gray-800 flex items-center"
+                                disabled={!isExportEnabled} // Disable button if conditions are not met
+                            >
+                                <Download className="h-5 w-5 text-blue-400 mr-1" />
+                                Export
+                            </button>
+                        </div>
                     </div>
 
-
-                    <div>
-                        <button
-                            onClick={handleExport} // Call handleExport on click
-                            className="ml-4 text-gray-600 hover:text-gray-800 flex float-right"
-                            disabled={!isExportEnabled} // Disable button if conditions are not met
-                        >
-                            <Download className="h-6 w-6 text-blue-400" />
-                            <span className="ml-1">Export</span>
-                        </button>
+                    {/* Search Bar */}
+                    <div className="p-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search users..."
+                                className="w-full pl-10 pr-4 py-2 border rounded-md"
+                                value={searchTerm}
+                                onChange={handleSearch} // Update search term on change
+                            />
+                            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        </div>
                     </div>
 
-
-                </div>
-
-                <input
-                    type="text"
-                    placeholder="Search users..."
-                    className="p-2 border rounded w-full mb-4"
-                    value={searchTerm}
-                    onChange={handleSearch} // Update search term on change
-                />
-
-
-                <div className="">
-                    <div className="bg-white h-[80vh] rounded-lg md:shadow overflow-hidden overflow-y-auto">
-                        {loading ? (
-                            <div className="flex items-center justify-center h-full">
-                                <svg
-                                    className="animate-spin h-10 w-10 text-blue-500"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    />
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12c0-1.16.17-2.27.48-3.32l1.63.64C6.24 9.48 6 10.7 6 12s.24 2.52.68 3.68l-1.63.64C4.17 14.27 4 13.16 4 12z"
-                                    />
-                                </svg>
-                            </div>
-                        ) : userList.length > 0 ? (
-                            <>
-                                {/* Table Headings */}
-                                <div className="p-4">
-                                    <div className="flex justify-between bg-gray-100 font-bold sticky top-0 z-10 p-[20px]">
-                                        <span className="text-gray-700 text-[15px]">Name</span>
-                                        <span className="text-gray-700 text-[15px]">Family Name</span>
-                                    </div>
-                                    <ul>
-                                        {userList.map((user: any, index: number) => (
-                                            <li
-                                                key={user.id}
-                                                className={`${index !== 0 ? 'border-t border-gray-200' : ''
-                                                    }`}
+                    {/* Users Table */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="bg-gray-50">
+                                    <th className="px-4 py-2 text-left">#</th>
+                                    <th className="px-4 py-2 text-left">Name</th>
+                                    <th className="px-4 py-2 text-left">Family Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={3} className="text-center p-4">
+                                            <svg
+                                                className="animate-spin h-10 w-10 text-blue-500 mx-auto"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
                                             >
-                                                <Link
-                                                    to={`/dashboard/account/profile/${user.id}`}
-                                                    state={{ activeTab: 'Report' }}
-                                                    className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-150"
-                                                >
-                                                    <div className="flex items-center">
-                                                        <span className="text-gray-700 text-[15px]">
-                                                            {user.Username}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center">
-                                                        <span className="text-gray-700 text-[15px]">
-                                                            {user.UserFamilyName}
-                                                        </span>
-                                                        <div className="h-5 w-5 text-gray-400" />
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* Pagination Controls */}
-                                <div className="flex justify-between items-center p-4">
-                                    {/* Previous Button */}
-                                    <button
-                                        onClick={handlePrevPage}
-                                        disabled={currentPage === 1}
-                                        className={`p-2 text-blue-500 transition-colors ${currentPage === 1
-                                            ? 'opacity-50 cursor-not-allowed'
-                                            : 'hover:text-blue-700'
-                                            }`}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-6 w-6"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            strokeWidth={2}
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                />
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12c0-1.16.17-2.27.48-3.32l1.63.64C6.24 9.48 6 10.7 6 12s.24 2.52.68 3.68l-1.63.64C4.17 14.27 4 13.16 4 12z"
+                                                />
+                                            </svg>
+                                        </td>
+                                    </tr>
+                                ) : userList.length > 0 ? (
+                                    userList.map((user: any, index: number) => (
+                                        <tr
+                                            key={user.id}
+                                            onClick={() => navigate(`/dashboard/account/profile/${user.id}`)}
+                                            className="border-t cursor-pointer hover:bg-gray-50"
                                         >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M15 19l-7-7 7-7"
-                                            />
-                                        </svg>
-                                    </button>
+                                            <td className="px-4 py-2">{(currentPage - 1) * usersPerPage + index + 1}</td>
+                                            <td className="px-4 py-2">{user.Username}</td>
+                                            <td className="px-4 py-2">{user.UserFamilyName}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={3} className="px-4 py-2 text-center">
+                                            No users found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
 
-                                    {/* Page Indicator */}
-                                    <span className="text-gray-700">
-                                        Page {currentPage} of {totalPages} from {userCount} Records
-                                    </span>
+                        {/* Pagination Controls */}
+                        <div className="flex justify-between mt-4 mb-[30px]">
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={handlePrevPage}
+                                className={`px-4 py-2 ${currentPage === 1 ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Previous
+                            </button>
 
-                                    {/* Next Button */}
-                                    <button
-                                        onClick={handleNextPage}
-                                        disabled={currentPage === totalPages}
-                                        className={`p-2 text-blue-500 transition-colors ${currentPage === totalPages
-                                            ? 'opacity-50 cursor-not-allowed'
-                                            : 'hover:text-blue-700'
-                                            }`}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-6 w-6"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            strokeWidth={2}
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M9 5l7 7-7 7"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <p className="p-4">No users found</p>
-                        )}
+                            <span className="px-4 py-2">
+                                Page {currentPage} of {totalPages} from {userCount} Records
+                            </span>
+
+                            <button
+                                disabled={currentPage === totalPages}
+                                onClick={handleNextPage}
+                                className={`px-4 py-2 ${currentPage === totalPages ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </main>
-
+            </div>
             {/* Mobile Navigation */}
             <MobileHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-        </div>
+
+        </>
+
     )
+
 }
 
 export default withAuth(ReportUsers);

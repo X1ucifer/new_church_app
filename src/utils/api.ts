@@ -23,7 +23,7 @@ export const registerUser = async (data: any) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.errors?.UserProfile?.[0] ||
+                error.response?.data?.errors?.UserProfile?.[0] || error.response?.data.error ||
                 error.response?.data?.errors?.UserEmail?.[0] || error.response?.data?.errors?.UserPhone?.[0] ||
                 error.response?.data?.errors?.UserChurchName?.[0] || error.response?.data?.errors?.UserName?.[0] ||
                 error.response?.data?.errors?.UserFamilyName?.[0] || error.response?.data?.errors?.UserGender?.[0] ||
@@ -471,7 +471,7 @@ export const editMember = async (
                 error.response?.data?.errors?.UserChurchName?.[0] || error.response?.data?.errors?.UserName?.[0] ||
                 error.response?.data?.errors?.UserFamilyName?.[0] || error.response?.data?.errors?.UserGender?.[0] ||
                 error.response?.data?.errors?.UserMaritalStatus?.[0] || error.response?.data?.errors?.UserDOB?.[0] ||
-                error.response?.data?.errors?.UserProfile?.[0] ||
+                error.response?.data?.errors?.UserProfile?.[0] || error.response?.data.error ||
                 error.response?.data?.errors?.UserAddress?.[0] || error.response?.data?.message || 'Failed to update member. Please try again.'
             );
         } else {
@@ -638,7 +638,7 @@ export const addFriend = async (token: string, data: any) => {
     } catch (error) {
         if (error instanceof AxiosError) {
             throw new Error(
-                error.response?.data?.errors?.UserEmail?.[0] || error.response?.data?.errors?.UserPhone?.[0] ||
+                error.response?.data?.errors?.UserEmail?.[0] || error.response?.data?.errors?.UserPhone?.[0] || error.response?.data.error ||
                 error.response?.data?.errors?.UserChurchName?.[0] || error.response?.data?.errors?.UserName?.[0] ||
                 error.response?.data?.errors?.UserFamilyName?.[0] || error.response?.data?.errors?.UserGender?.[0] ||
                 error.response?.data?.errors?.UserMaritalStatus?.[0] || error.response?.data?.errors?.UserDOB?.[0] ||
@@ -672,11 +672,29 @@ export const membersImport = async (token?: string, file?: File) => {
                 );
             }
 
-            throw new Error(
-                error.response?.data?.messages?.incomplete ||
-                error.response?.data?.messages?.duplicate ||
-                'Failed to upload members data. Please try again.'
-            );
+            const csvData = error.response?.data;
+            // const incompleteMessage = error.response?.data?.messages?.incomplete;
+            // const duplicateMessage = error.response?.data?.messages?.duplicate;
+            // const success = error.response?.data?.messages?.success;
+
+            // let errorMessage = 'Failed to upload members data. Please try again.';
+            // const errorMessages = [];
+
+            // if (incompleteMessage) {
+            //     errorMessages.push(incompleteMessage);
+            // }
+            // if (duplicateMessage) {
+            //     errorMessages.push(duplicateMessage);
+            // }
+            // if (duplicateMessage) {
+            //     errorMessages.push(success);
+            // }
+
+            // if (errorMessages.length > 0) {
+            //     errorMessage = errorMessages.join('\n'); // Join messages with a newline
+            // }
+
+            throw new Error(csvData);
         } else {
             throw new Error('An unexpected error occurred. Please try again.');
         }
@@ -718,6 +736,26 @@ export const reportExport = async (token?: string, report_type?: string, searchT
             params: {
                 report_type,
                 search: searchTerm,
+            },
+        });
+
+        return response; // Return only the data part of the response
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error(
+                error.response?.data?.message || 'Failed to export users. Please try again.'
+            );
+        } else {
+            throw new Error('An unexpected error occurred. Please try again.');
+        }
+    }
+};
+
+export const membersExport = async (token?: string, report_type?: string, searchTerm?: any) => {
+    try {
+        const response = await api.get('/totalExcelDownload', {
+            headers: {
+                Authorization: `Bearer ${token}`,
             },
         });
 

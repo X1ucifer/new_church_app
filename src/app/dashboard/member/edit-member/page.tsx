@@ -39,7 +39,8 @@ function UpdateMember() {
     const [userType, setUserType] = useState('');
     const [profileImage, setProfileImage] = useState<File | null>(null);
     const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);  // For preview
-    const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({});
+    const [validationErrors, setErrors] = useState<{ [key: string]: string | undefined }>({});
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
@@ -47,6 +48,16 @@ function UpdateMember() {
 
     const { mutate: editMember, isLoading: Loading, error: Error } = useEditMember();
 
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
@@ -75,8 +86,6 @@ function UpdateMember() {
             }
         }
 
-        // Validation for UserDOB
-
 
         // No restrictions for UserName, UserFamilyName, and UserAddress
         else if (name === 'UserName' || name === 'UserFamilyName' || name === 'UserAddress') {
@@ -87,7 +96,11 @@ function UpdateMember() {
         else {
             setFormData(prevData => ({ ...prevData, [name]: value }));
         }
+
+
     };
+
+
 
 
     const handleImageChange = (e: any) => {
@@ -124,12 +137,25 @@ function UpdateMember() {
         // Initialize an array to collect error messages
         const errors: string[] = [];
 
+        console.log("date", formData.UserDOB)
         // Validate DOB
-        if (selectedDate < minDate) {
-            errors.push('Date of birth cannot be before 1940.');
+        if (!formData.UserDOB) {
+            errors.push('Date of Birth is required.');
+        } else {
+            if (selectedDate < minDate) {
+                errors.push('Date of birth cannot be before 1940.');
+            }
+            if (selectedDate > maxDate) {
+                errors.push('Date of birth cannot be in the future.');
+            }
         }
-        if (selectedDate > maxDate) {
-            errors.push('Date of birth cannot be in the future.');
+
+        // Validate UserEmail
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!formData.UserEmail) {
+            errors.push('Email is required.');
+        } else if (!emailRegex.test(formData.UserEmail)) {
+            errors.push('Invalid email format.');
         }
 
         // If there are validation errors, show alert and return
@@ -137,7 +163,7 @@ function UpdateMember() {
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: errors.join(' '), 
+                text: errors.join(' '),
                 confirmButtonText: 'OK',
             });
             return; // Stop further execution
@@ -159,7 +185,7 @@ function UpdateMember() {
             { token, id, data: dataToSend },
             {
                 onSuccess() {
-                    navigate(`/dashboard/account/profile/${id}`,);
+                    navigate(`/dashboard/account/profile/${id}`);
                 },
                 onError(error) {
                     Swal.fire({
@@ -172,6 +198,7 @@ function UpdateMember() {
             }
         );
     };
+
 
 
     useEffect(() => {
@@ -312,19 +339,32 @@ function UpdateMember() {
                             </div>
                         </div>
 
-                        <div>
-                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth <span className='text-red-500'>*</span></label>
+                        {isMobile ? (
+                            <input
+                                type="text"
+                                id="UserDOBText" 
+                                name="UserDOB"
+                                required
+                                value={formData.UserDOB || ''}
+                                onChange={handleChange}
+                                className="block md:hidden w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="YYYY-MM-DD"
+                                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    e.target.value = e.target.value.replace(/[^0-9-]/g, '');
+                                }}
+                            />
+                        ) : (
                             <input
                                 type="date"
                                 id="UserDOB"
                                 name="UserDOB"
-                                value={formData.UserDOB}
+                                value={formData.UserDOB || ''}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="hidden md:block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 required
                                 max={new Date().toISOString().split('T')[0]}
                             />
-                        </div>
+                        )}
 
 
                         <div>

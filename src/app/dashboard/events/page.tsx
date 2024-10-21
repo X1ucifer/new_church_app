@@ -15,6 +15,7 @@ import withAuth from '../../../app/authCheck';
 import Lottie from 'lottie-react';
 import emptyAnimation from '../../../animation/empty.json';
 
+
 const MySwal = withReactContent(Swal);
 
 function ChurchEvents() {

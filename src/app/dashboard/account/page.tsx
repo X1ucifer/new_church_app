@@ -6,7 +6,7 @@ import { DesktopHeader } from '../../../components/partials/desktopHeader';
 import { MobileHeader } from '../../../components/partials/mobileHeader';
 import { Link, useNavigate } from 'react-router-dom';
 import withAuth from '../../../app/authCheck';
-import { getSampleCSV, membersImport } from '../../../utils/api';
+import { getSampleCSV, membersExport, membersImport } from '../../../utils/api';
 import Swal from 'sweetalert2';
 import { ArrowLeft, Download } from 'lucide-react';
 import Tippy from '@tippyjs/react';
@@ -90,9 +90,8 @@ function AccountSettings() {
             alert('Please select a file to upload');
             return;
         }
-
         try {
-            setIsUploading(true); // Show spinner on the upload button
+            setIsUploading(true);
             const response = await membersImport(token, file);
             console.log('Upload successful:', response);
 
@@ -102,17 +101,55 @@ function AccountSettings() {
                 confirmButtonText: 'OK',
             });
 
-            setIsModalOpen(false); // Close modal on success
+            setIsModalOpen(false);
         } catch (error: any) {
-            Swal.fire({
-                icon: 'error',
-                title: `${error}`,
-                confirmButtonText: 'OK',
-            });
+            if (error) {
+                const csvBlob = new Blob([error], { type: 'text/csv' });
+                const csvUrl = URL.createObjectURL(csvBlob);
+
+                Swal.fire({
+                    icon: 'error',
+                    html: `<div style="font-size: 16px; line-height: 1.5;">There was an error during upload. Click 'Download' to get the error report.</div>`,
+                    confirmButtonText: 'Download',
+                }).then(() => {
+                    const link = document.createElement('a');
+                    link.href = csvUrl;
+                    link.download = 'error_report.csv';  // Set file name
+                    link.click();  // Trigger the download
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    html: `<div style="font-size: 16px; line-height: 1.5;">${error}</div>`,
+                    confirmButtonText: 'OK',
+                });
+            }
         } finally {
-            setIsUploading(false); // Hide spinner once upload is done
+            setIsUploading(false);
         }
     };
+
+    const handleMembersExport = async () => {
+
+        try {
+            const response = await membersExport(token);
+
+            // Create a URL for the downloaded file
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'report.csv'); // Set the filename
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link); // Clean up the link
+        } catch (error: any) {
+            console.error('Error downloading report:', error);
+            alert(error.message); // Show error message
+        } finally {
+        }
+    };
+
+
 
 
     return (
@@ -228,12 +265,22 @@ function AccountSettings() {
                                     </button>
 
                                     <button
+                                        className="bg-orange-500 hover:bg-orange-300 text-white font-bold py-2 px-4 mr-2 rounded"
+                                        onClick={handleMembersExport}
+                                        disabled={isUploading} // Disable cancel button during upload
+                                    >
+                                        Download
+                                    </button>
+
+                                    <button
                                         className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
                                         onClick={() => setIsModalOpen(false)}
                                         disabled={isUploading} // Disable cancel button during upload
                                     >
                                         Cancel
                                     </button>
+
+
                                 </div>
                             </div>
                         </div>

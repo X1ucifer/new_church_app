@@ -5,6 +5,9 @@ import { useChurches } from '../../../../hooks/useRegister';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import TimePicker from 'rc-time-picker';
+import moment from 'moment';
+
 
 const generateTimeOptions: any = () => {
     const options: any = [];
@@ -33,6 +36,16 @@ const eventSchema = z.object({
 })
 
 export default function NewEvent({ onClose }: any) {
+
+    const format = 'h:mm a';
+
+    const now = moment().hour(0).minute(0);
+
+    function onChange(value: any) {
+        console.log(value && value.format(format));
+    }
+
+
     const [eventName, setEventName] = useState('')
     const [eventType, setEventType] = useState('')
     const [leader, setLeader] = useState('')
@@ -59,7 +72,9 @@ export default function NewEvent({ onClose }: any) {
         handleSubmit,
         formState: { errors },
         setValue,
-        reset
+        reset,
+        trigger,
+        watch
     } = useForm({
         resolver: zodResolver(eventSchema),
     });
@@ -77,6 +92,9 @@ export default function NewEvent({ onClose }: any) {
             }
         );
     };
+
+    const selectedTime = watch('time');
+
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg shadow-lg">
@@ -151,7 +169,22 @@ export default function NewEvent({ onClose }: any) {
                                 Time <span className='text-red-500'>*</span>
                             </label>
                             <div className="relative">
-                                <select
+                                <TimePicker
+                                    showSecond={false}
+                                    defaultValue={selectedTime ? moment(selectedTime, 'h:mm A') : moment()}
+                                    className="w-full p-1 border rounded-md appearance-none"
+                                    format="h:mm A"
+                                    use12Hours
+                                    inputReadOnly
+                                    {...register('time')}
+                                    onChange={(e) => {
+                                        // Manually set the formatted time value and trigger validation
+                                        const formattedTime = e ? e.format('h:mm A') : '';
+                                        setValue('time', formattedTime);
+                                        trigger('time'); // Trigger validation for the time field when it changes
+                                    }}
+                                />
+                                {/* <select
                                     id="time"
                                     {...register('time')}
                                     value={time}
@@ -163,7 +196,7 @@ export default function NewEvent({ onClose }: any) {
                                             {option}
                                         </option>
                                     ))}
-                                </select>
+                                </select> */}
                                 {errors.time && typeof errors.time.message === 'string' && (
                                     <p className="text-red-500 text-sm">{errors.time.message}</p>
                                 )}

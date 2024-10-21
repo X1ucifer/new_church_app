@@ -14,26 +14,55 @@ const schema = z.object({
     UserFamilyName: z.string().min(1, 'Family Name is required'),
     UserGender: z.string().min(1, 'Gender is required'),
     UserMaritalStatus: z.string().min(1, 'Marital Status is required'),
-    UserDOB: z.string().min(1, 'Date of Birth is required'),
+    UserDOB: z.string()
+        .refine((val) => !!val, {
+            message: 'Date of Birth is required',
+        })
+        .refine((val) => {
+            const regex = /^\d{4}-\d{2}-\d{2}$/;
+            return regex.test(val);
+        }, {
+            message: 'Date must be in the format YYYY-MM-DD.',
+        })
+        .refine((val) => {
+            const [year, month, day] = val.split('-').map(Number);
+            const currentDate = new Date();
+            const maxYear = currentDate.getFullYear();
+            const minYear = 1940;
+
+            // Year validation
+            return year >= minYear && year <= maxYear;
+        }, {
+            message: 'Year must be between 1940 and the current year.',
+        })
+        .refine((val) => {
+            const month = Number(val.split('-')[1]);
+            // Month validation
+            return month >= 1 && month <= 12;
+        }, {
+            message: 'Month must be between 1 and 12.',
+        })
+        .refine((val) => {
+            const [year, month, day] = val.split('-').map(Number);
+            // Day validation
+            return day >= 1 && day <= 31;
+        }, {
+            message: 'Day must be between 1 and 31.',
+        })
+        .refine((val) => {
+            const [year, month, day] = val.split('-').map(Number);
+            // Check for valid days in the specified month and year
+            const daysInMonth = new Date(year, month, 0).getDate();
+            return day <= daysInMonth;
+        }, {
+            message: 'Invalid date for the specified month and year.',
+        }),
     UserPhone: z.string().optional(),
     UserEmail: z.string().email('Email is required'),
     UserAddress: z.string().optional(),
     UserChurchName: z.string().optional(),
     UserType: z.string().min(1, 'User Type is required'),
 });
-
-// const schema = z.object({
-//     UserName: z.string().optional(),
-//     UserFamilyName: z.string().optional(),
-//     UserGender: z.string().optional(),
-//     UserMaritalStatus: z.string().optional(),
-//     UserDOB: z.string().optional(),
-//     UserPhone: z.string().optional(),
-//     UserEmail: z.string().email('Email is required'),
-//     UserAddress: z.string().optional(),
-//     UserChurchName: z.string().optional(),
-//     UserType: z.string().optional(),
-// });
 
 
 export default function Register() {
@@ -289,7 +318,9 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth <span className='text-red-500'>*</span></label>
+                            <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+
+                            {/* Date input for desktop */}
                             <input
                                 type="date"
                                 id="UserDOB"
@@ -297,7 +328,7 @@ export default function Register() {
                                 {...register('UserDOB', {
                                     validate: (value) => {
                                         const selectedDate = new Date(value);
-                                        const minDate = new Date('1940-01-01'); 
+                                        const minDate = new Date('1900-01-01');
                                         const maxDate = new Date();
 
                                         if (selectedDate < minDate) {
@@ -309,12 +340,66 @@ export default function Register() {
                                         return true;
                                     },
                                 })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="hidden md:block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 max={new Date().toISOString().split('T')[0]}
-                                min="1900-01-01" // Minimum date to prevent unrealistic dates
+                                min="1900-01-01"
                             />
+
+                            {/* Text input for mobile */}
+                            <input
+                                type="text"
+                                id="UserDOBText"
+                                defaultValue={formData.UserDOB || ''}
+                                {...register('UserDOB', {
+                                    validate: (value) => {
+                                        // Regex pattern to validate date format (YYYY-MM-DD)
+                                        const regex = /^\d{4}-\d{2}-\d{2}$/;
+                                        if (!regex.test(value)) {
+                                            return 'Date must be in the format YYYY-MM-DD.';
+                                        }
+
+                                        const [year, month, day] = value.split('-').map(Number);
+                                        const currentDate = new Date();
+                                        const maxYear = currentDate.getFullYear();
+                                        const minYear = 1940;
+
+                                        // Year validation
+                                        if (year < minYear || year > maxYear) {
+                                            return `Year must be between ${minYear} and ${maxYear}.`;
+                                        }
+
+                                        // Month validation
+                                        if (month < 1 || month > 12) {
+                                            return 'Month must be between 1 and 12.';
+                                        }
+
+                                        // Day validation
+                                        if (day < 1 || day > 31) {
+                                            return 'Day must be between 1 and 31.';
+                                        }
+
+                                        // Additional check for days in month (leap year handling can be added)
+                                        const daysInMonth = new Date(year, month, 0).getDate();
+                                        if (day > daysInMonth) {
+                                            return `This month has only ${daysInMonth} days.`;
+                                        }
+
+                                        return true;
+                                    },
+                                })}
+                                onInput={(e: any) => {
+                                    e.target.value = e.target.value.replace(/[^0-9-]/g, '');
+                                }}
+                                className="block md:hidden w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="YYYY-MM-DD"
+                            />
+
+                            {/* Error messages */}
                             {errors.UserDOB && typeof errors.UserDOB.message === 'string' && (
                                 <p className="text-red-500 text-sm">{errors.UserDOB.message}</p>
+                            )}
+                            {errors.UserDOBText && typeof errors.UserDOBText.message === 'string' && (
+                                <p className="text-red-500 text-sm">{errors.UserDOBText.message}</p>
                             )}
                         </div>
 

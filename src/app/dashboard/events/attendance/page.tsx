@@ -17,6 +17,7 @@ interface EventDetails {
     EventTime: string;
     EventLeader: string;
     EventChurchName: string;
+    totalattendance: string;
 }
 
 interface Member {
@@ -318,6 +319,10 @@ const Attendance: React.FC<any> = () => {
                         <div>
                             <p className="text-sm text-gray-500">Church Name</p>
                             <p className="font-medium">{eventDetails?.EventChurchName}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500">Total Attendance</p>
+                            <p className="font-medium">{eventDetails?.totalattendance}</p>
                         </div>
                     </div>
                 </div>

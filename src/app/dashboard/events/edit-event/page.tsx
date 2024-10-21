@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { X, ChevronDown, Calendar, ArrowLeft } from 'lucide-react';
 import { useAddEvent, useEditEvent, useEventDetails, useUpcomingEvents } from '../../../../hooks/useEvents';
 import { useChurches } from '../../../../hooks/useRegister';
-import TimePicker from 'react-time-picker';
 import { useNavigate, useParams } from 'react-router-dom';
 import withAuth from '../../../../app/authCheck';
 import Swal from 'sweetalert2';
-
+import TimePicker from 'rc-time-picker';
+import moment from 'moment';
 interface EventDetails {
   EventName: string;
   EventType: string;
@@ -38,6 +38,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
   const [time, setTime] = useState<any>('10:00 AM');
   const [date, setDate] = useState<string>('');
   const [pastoralChurch, setPastoralChurch] = useState<string>('');
+  const [error, setError] = useState<string>(''); // State for error message
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -67,8 +68,23 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
     }
   }, [event]);
 
+  const handleTimeChange = (value: any | null) => {
+    if (value) {
+      setTime(value.format('h:mm A')); // Update time state with formatted value
+      setError(''); // Clear error message on valid time selection
+    } else {
+      setTime(undefined); // Reset if no value
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!time) {
+      setError('Time is required.');
+      return;
+  }
+
     editEvent(
       {
         id,
@@ -183,7 +199,18 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
               </label>
               <div className="relative">
                 {/* <TimePicker id="time" value={time} onChange={setTime} format="hh:mm a" className="w-full p-2 border rounded-md" /> */}
-                <select
+                <TimePicker
+                  showSecond={false}
+                  value={time ? moment(time, 'h:mm A') : undefined}
+                  className="w-full p-1 border rounded-md appearance-none"
+                  format="h:mm A"
+                  use12Hours
+                  inputReadOnly
+                  onChange={handleTimeChange}
+                />
+                {error && <p className="text-red-600">{error}</p>} {/* Show error if exists */}
+
+                {/* <select
                   id="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
@@ -195,7 +222,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
                       {option}
                     </option>
                   ))}
-                </select>
+                </select> */}
 
               </div>
             </div>
