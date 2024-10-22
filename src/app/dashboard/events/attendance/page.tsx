@@ -6,6 +6,7 @@ import { updateAttendance } from '../../../../utils/api';
 import withAuth from '../../../../app/authCheck';
 import Swal from 'sweetalert2';
 import { DesktopHeader } from '../../../../components/partials/desktopHeader';
+import { useQueryClient } from 'react-query';
 
 const API_URL = 'https://tjc.wizappsystem.com/church/public/api/user/newFriends';
 
@@ -66,6 +67,7 @@ const Attendance: React.FC<any> = () => {
     //   });
 
     const { id } = useParams<{ id: string }>();
+    const queryClient = useQueryClient();
 
     const navigate = useNavigate();
     const token = localStorage.getItem('token') || '';
@@ -209,6 +211,8 @@ const Attendance: React.FC<any> = () => {
             // Make the API call for unselect
             try {
                 await updateAttendance(token, userId, data); // Replace with your actual API function
+                queryClient.invalidateQueries('eventDetails');
+
                 console.log('Attendance unselected successfully:', data);
             } catch (error) {
                 console.error('Error unselecting attendance:', error);
@@ -225,7 +229,9 @@ const Attendance: React.FC<any> = () => {
 
             // Make the API call for select
             try {
-                await updateAttendance(token, userId, data); // Replace with your actual API function
+                await updateAttendance(token, userId, data); 
+                queryClient.invalidateQueries('eventDetails');
+
                 console.log('Attendance selected successfully:', data);
             } catch (error) {
                 console.error('Error selecting attendance:', error);

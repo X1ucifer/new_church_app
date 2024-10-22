@@ -71,8 +71,7 @@ function UpdateMember() {
             } else {
                 setErrors(prevErrors => ({ ...prevErrors, UserEmail: undefined })); // Clear error if valid
             }
-            // Since the input is disabled, we don't update the formData here
-            return;
+            
         }
 
         // Validation for UserPhone
@@ -386,7 +385,6 @@ function UpdateMember() {
                                 id="UserEmail"
                                 name="UserEmail"
                                 value={formData.UserEmail}
-                                disabled={member?.UserType === "Pastor" || member?.UserType === "Exco"}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />

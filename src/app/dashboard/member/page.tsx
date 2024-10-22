@@ -412,7 +412,7 @@ function AddMember() {
                             </div>
 
                             <div>
-                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth (YYYY-MM-DD format only)</label>
 
                                 {/* Date input for desktop */}
                                 <input
