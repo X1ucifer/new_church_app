@@ -365,7 +365,7 @@ const Attendance: React.FC<any> = () => {
 
                 {/* Members Table */}
                 <div className="px-4 pb-4">
-                    <div className="overflow-y-auto max-h-64"> {/* Set a max height and allow vertical scrolling */}
+                    <div className="overflow-y-auto"> {/* Set a max height and allow vertical scrolling */}
 
 
                         <table className="w-full">

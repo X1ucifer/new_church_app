@@ -71,7 +71,7 @@ function UpdateMember() {
             } else {
                 setErrors(prevErrors => ({ ...prevErrors, UserEmail: undefined })); // Clear error if valid
             }
-            
+
         }
 
         // Validation for UserPhone
@@ -150,12 +150,12 @@ function UpdateMember() {
         }
 
         // Validate UserEmail
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.UserEmail) {
-            errors.push('Email is required.');
-        } else if (!emailRegex.test(formData.UserEmail)) {
-            errors.push('Invalid email format.');
-        }
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // if (!formData.UserEmail) {
+        //     errors.push('Email is required.');
+        // } else if (!emailRegex.test(formData.UserEmail)) {
+        //     errors.push('Invalid email format.');
+        // }
 
         // If there are validation errors, show alert and return
         if (errors.length > 0) {
@@ -338,10 +338,13 @@ function UpdateMember() {
                             </div>
                         </div>
 
+                        <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1"> Date of Birth (YYYY-MM-DD format only)</label>
+
                         {isMobile ? (
+
                             <input
                                 type="text"
-                                id="UserDOBText" 
+                                id="UserDOBText"
                                 name="UserDOB"
                                 required
                                 value={formData.UserDOB || ''}

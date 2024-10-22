@@ -141,11 +141,11 @@ export default function ChurchLogin() {
                 }
             },
             onError: (error: any) => {
-                console.log("Error:", error);
+                // console.log("Error:", error?.response?.status);
                 if (error.response?.status === 401) {
                     setLoginError('Unauthorized access. Please check your credentials.');
                 } else {
-                    setLoginError('An unexpected error occurred. Please try again.');
+                    setLoginError('Unauthorized access. Please check your credentials.');
                 }
             },
         });

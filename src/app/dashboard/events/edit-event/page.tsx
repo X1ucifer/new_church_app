@@ -7,6 +7,8 @@ import withAuth from '../../../../app/authCheck';
 import Swal from 'sweetalert2';
 import TimePicker from 'rc-time-picker';
 import moment from 'moment';
+import OutsideClickHandler from 'react-outside-click-handler';
+
 interface EventDetails {
   EventName: string;
   EventType: string;
@@ -43,7 +45,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const timeOptions = generateTimeOptions();
-
+  const [previousTime, setPreviousTime] = useState<string | undefined>(''); 
 
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>(); // Extracting event id from URL params
@@ -68,9 +70,29 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
     }
   }, [event]);
 
+  // const handleTimeChange = (value: any | null) => {
+  //   if (value) {
+  //     setTime(value.format('h:mm A')); // Update time state with formatted value
+  //     setError(''); // Clear error message on valid time selection
+  //   } else {
+  //     setTime(undefined); // Reset if no value
+  //   }
+  // };
+
   const handleTimeChange = (value: any | null) => {
     if (value) {
-      setTime(value.format('h:mm A')); // Update time state with formatted value
+      const formattedTime = value.format('h:mm A');
+      setTime(formattedTime); // Update time state with formatted value
+
+      // Check if AM/PM has changed
+      if (previousTime) {
+        const previousMoment = moment(previousTime, 'h:mm A');
+        if (value.format('A') !== previousMoment.format('A')) {
+          setIsOpen(false); // Close picker if AM/PM has changed
+        }
+      }
+
+      setPreviousTime(formattedTime); // Update previous time to current
       setError(''); // Clear error message on valid time selection
     } else {
       setTime(undefined); // Reset if no value
@@ -83,7 +105,7 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
     if (!time) {
       setError('Time is required.');
       return;
-  }
+    }
 
     editEvent(
       {
@@ -199,15 +221,24 @@ const EditEvent: React.FC<any> = ({ onClose }) => {
               </label>
               <div className="relative">
                 {/* <TimePicker id="time" value={time} onChange={setTime} format="hh:mm a" className="w-full p-2 border rounded-md" /> */}
-                <TimePicker
-                  showSecond={false}
-                  value={time ? moment(time, 'h:mm A') : undefined}
-                  className="w-full p-1 border rounded-md appearance-none"
-                  format="h:mm A"
-                  use12Hours
-                  inputReadOnly
-                  onChange={handleTimeChange}
-                />
+                <OutsideClickHandler
+                  onOutsideClick={() => {
+                  }}
+                >
+                  <TimePicker
+                    showSecond={false}
+                    value={time ? moment(time, 'h:mm A') : undefined}
+                    className="w-full p-1 border rounded-md appearance-none"
+                    format="h:mm A"
+                    use12Hours
+                    open={isOpen}
+                    onOpen={() => setIsOpen(true)}
+                    inputReadOnly
+                    onClose={() => setIsOpen(false)}
+                    onChange={handleTimeChange}
+                  />
+                </OutsideClickHandler>
+
                 {error && <p className="text-red-600">{error}</p>} {/* Show error if exists */}
 
                 {/* <select

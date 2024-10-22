@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { X, ChevronDown, Clock, Calendar } from 'lucide-react'
 import { useAddEvent } from '../../../../hooks/useEvents'
 import { useChurches } from '../../../../hooks/useRegister';
@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import TimePicker from 'rc-time-picker';
 import moment from 'moment';
+import OutsideClickHandler from 'react-outside-click-handler';
 
 
 const generateTimeOptions: any = () => {
@@ -61,6 +62,13 @@ export default function NewEvent({ onClose }: any) {
         setIsOpen(false);
     };
 
+    const timePickerRef = useRef<any>(null);
+
+    const closeDropdown = () => {
+        setIsOpen(false)
+    }
+
+
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 
@@ -95,6 +103,22 @@ export default function NewEvent({ onClose }: any) {
 
     const selectedTime = watch('time');
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            // Check if the click is outside the TimePicker and the picker is open
+            if (timePickerRef.current && !timePickerRef.current.contains(event.target as Node) && isOpen) {
+                setIsOpen(false); // Close the TimePicker if the click is outside
+            }
+        };
+
+        // Add event listener when the component mounts
+        document.addEventListener('mousedown', handleClickOutside);
+
+        // Cleanup event listener when the component unmounts
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg shadow-lg">
@@ -169,34 +193,39 @@ export default function NewEvent({ onClose }: any) {
                                 Time <span className='text-red-500'>*</span>
                             </label>
                             <div className="relative">
-                                <TimePicker
-                                    showSecond={false}
-                                    defaultValue={selectedTime ? moment(selectedTime, 'h:mm A') : moment()}
-                                    className="w-full p-1 border rounded-md appearance-none"
-                                    format="h:mm A"
-                                    use12Hours
-                                    inputReadOnly
-                                    {...register('time')}
-                                    onChange={(e) => {
-                                        // Manually set the formatted time value and trigger validation
-                                        const formattedTime = e ? e.format('h:mm A') : '';
-                                        setValue('time', formattedTime);
-                                        trigger('time'); // Trigger validation for the time field when it changes
+                                <OutsideClickHandler
+                                    onOutsideClick={() => {
                                     }}
-                                />
-                                {/* <select
-                                    id="time"
-                                    {...register('time')}
-                                    value={time}
-                                    onChange={(e) => setTime(e.target.value)}
-                                    className="w-full p-2 border rounded-md appearance-none"
                                 >
-                                    {generateTimeOptions().map((option: string) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select> */}
+                                    <TimePicker
+                                        showSecond={false}
+                                        defaultValue={selectedTime ? moment(selectedTime, 'h:mm A') : moment()}
+                                        className="w-full p-1 border rounded-md appearance-none"
+                                        format="h:mm A"
+                                        use12Hours
+                                        open={isOpen}
+                                        onOpen={() => setIsOpen(true)}
+                                        inputReadOnly
+                                        onClose={() => setIsOpen(false)}
+                                        {...register('time')}
+                                        onChange={(newTime) => {
+                                            const formattedTime = newTime ? newTime.format('h:mm A') : '';
+
+                                            // Convert selectedTime (string) back to a Moment object for comparison
+                                            const selectedMomentTime = selectedTime ? moment(selectedTime, 'h:mm A') : null;
+
+                                            // Compare AM/PM of the new time with the previously selected time
+                                            if (newTime && selectedMomentTime && newTime.format('A') !== selectedMomentTime.format('A')) {
+                                                setIsOpen(false);
+                                            }
+
+                                            setValue('time', formattedTime); // Update the form field with the formatted time
+                                            trigger('time'); // Trigger validation for the time field
+                                        }}
+                                    />
+                                </OutsideClickHandler>
+
+
                                 {errors.time && typeof errors.time.message === 'string' && (
                                     <p className="text-red-500 text-sm">{errors.time.message}</p>
                                 )}

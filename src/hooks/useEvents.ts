@@ -50,6 +50,7 @@ export const useRights = (token: string) => {
 
 export const useAddEvent = (token: string) => {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   return useMutation(
     ({ eventName, eventType, leader, time, date, EventChurchName }: any) =>
@@ -58,7 +59,10 @@ export const useAddEvent = (token: string) => {
       onMutate: () => {
       },
       onSuccess: (data) => {
+        window.location.reload(); 
         dispatch(addEvents(data));
+        queryClient.invalidateQueries('upcomingEvents');
+
       },
       onError: (error: any) => {
       },

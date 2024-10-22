@@ -292,6 +292,19 @@ function AddMember() {
 
     const { data: groups, isLoading, error } = useGroups(token);
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
 
     return (
         <>
@@ -414,79 +427,85 @@ function AddMember() {
                             <div>
                                 <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth (YYYY-MM-DD format only)</label>
 
+
+                                {isMobile ? (
+
+                                    <input
+                                        type="text"
+                                        id="UserDOBText"
+                                        defaultValue={formData.UserDOB || ''}
+                                        {...register('UserDOB', {
+                                            validate: (value) => {
+                                                // Regex pattern to validate date format (YYYY-MM-DD)
+                                                const regex = /^\d{4}-\d{2}-\d{2}$/;
+                                                if (!regex.test(value)) {
+                                                    return 'Date must be in the format YYYY-MM-DD.';
+                                                }
+
+                                                const [year, month, day] = value.split('-').map(Number);
+                                                const currentDate = new Date();
+                                                const maxYear = currentDate.getFullYear();
+                                                const minYear = 1940;
+
+                                                // Year validation
+                                                if (year < minYear || year > maxYear) {
+                                                    return `Year must be between ${minYear} and ${maxYear}.`;
+                                                }
+
+                                                // Month validation
+                                                if (month < 1 || month > 12) {
+                                                    return 'Month must be between 1 and 12.';
+                                                }
+
+                                                // Day validation
+                                                if (day < 1 || day > 31) {
+                                                    return 'Day must be between 1 and 31.';
+                                                }
+
+                                                // Additional check for days in month (leap year handling can be added)
+                                                const daysInMonth = new Date(year, month, 0).getDate();
+                                                if (day > daysInMonth) {
+                                                    return `This month has only ${daysInMonth} days.`;
+                                                }
+
+                                                return true;
+                                            },
+                                        })}
+                                        onInput={(e: any) => {
+                                            e.target.value = e.target.value.replace(/[^0-9-]/g, '');
+                                        }}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="YYYY-MM-DD"
+                                    />
+
+                                )
+                                    : (
+                                        <input
+                                            type="date"
+                                            id="UserDOB"
+                                            defaultValue={formData.UserDOB || ''}
+                                            {...register('UserDOB', {
+                                                validate: (value) => {
+                                                    const selectedDate = new Date(value);
+                                                    const minDate = new Date('1900-01-01');
+                                                    const maxDate = new Date();
+
+                                                    if (selectedDate < minDate) {
+                                                        return 'Date of birth cannot be before 1900.';
+                                                    }
+                                                    if (selectedDate > maxDate) {
+                                                        return 'Date of birth cannot be in the future.';
+                                                    }
+                                                    return true;
+                                                },
+                                            })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                            max={new Date().toISOString().split('T')[0]}
+                                            min="1900-01-01"
+                                        />
+                                    )}
                                 {/* Date input for desktop */}
-                                <input
-                                    type="date"
-                                    id="UserDOB"
-                                    defaultValue={formData.UserDOB || ''}
-                                    {...register('UserDOB', {
-                                        validate: (value) => {
-                                            const selectedDate = new Date(value);
-                                            const minDate = new Date('1900-01-01');
-                                            const maxDate = new Date();
-
-                                            if (selectedDate < minDate) {
-                                                return 'Date of birth cannot be before 1900.';
-                                            }
-                                            if (selectedDate > maxDate) {
-                                                return 'Date of birth cannot be in the future.';
-                                            }
-                                            return true;
-                                        },
-                                    })}
-                                    className="hidden md:block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    max={new Date().toISOString().split('T')[0]}
-                                    min="1900-01-01"
-                                />
-
-                                {/* Text input for mobile */}
-                                <input
-                                    type="text"
-                                    id="UserDOBText"
-                                    defaultValue={formData.UserDOB || ''}
-                                    {...register('UserDOB', {
-                                        validate: (value) => {
-                                            // Regex pattern to validate date format (YYYY-MM-DD)
-                                            const regex = /^\d{4}-\d{2}-\d{2}$/;
-                                            if (!regex.test(value)) {
-                                                return 'Date must be in the format YYYY-MM-DD.';
-                                            }
-
-                                            const [year, month, day] = value.split('-').map(Number);
-                                            const currentDate = new Date();
-                                            const maxYear = currentDate.getFullYear();
-                                            const minYear = 1940;
-
-                                            // Year validation
-                                            if (year < minYear || year > maxYear) {
-                                                return `Year must be between ${minYear} and ${maxYear}.`;
-                                            }
-
-                                            // Month validation
-                                            if (month < 1 || month > 12) {
-                                                return 'Month must be between 1 and 12.';
-                                            }
-
-                                            // Day validation
-                                            if (day < 1 || day > 31) {
-                                                return 'Day must be between 1 and 31.';
-                                            }
-
-                                            // Additional check for days in month (leap year handling can be added)
-                                            const daysInMonth = new Date(year, month, 0).getDate();
-                                            if (day > daysInMonth) {
-                                                return `This month has only ${daysInMonth} days.`;
-                                            }
-
-                                            return true;
-                                        },
-                                    })}
-                                    onInput={(e: any) => {
-                                        e.target.value = e.target.value.replace(/[^0-9-]/g, '');
-                                    }}
-                                    className="block md:hidden w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="YYYY-MM-DD"
-                                />
+                               
 
                                 {/* Error messages */}
                                 {errors.UserDOB && typeof errors.UserDOB.message === 'string' && (
